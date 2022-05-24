@@ -1,1 +1,1 @@
-# reddit_memes_analyzer
+# Reddit Memes Analyzer
