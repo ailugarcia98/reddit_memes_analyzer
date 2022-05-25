@@ -26,7 +26,7 @@ services:
     #     timeout: 5s
     #     retries: 10
 
-  consumer1:
+  consumer_post:
     build:
       context: ./consumer
       dockerfile: consumer.dockerfile
@@ -38,8 +38,10 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - CONSUMER_ID=1
+      - QUEUE_TO_READ=post_queue
+      - QUEUES_TO_WRITE=queue_test_post
 
-  consumer2:
+  consumer_comment:
     build:
       context: ./consumer
       dockerfile: consumer.dockerfile
@@ -51,3 +53,5 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - CONSUMER_ID=2
+      - QUEUE_TO_READ=comments_queue
+      - QUEUES_TO_WRITE=queue_test_comments

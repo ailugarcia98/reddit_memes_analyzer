@@ -2,30 +2,39 @@
 import pika
 import time
 import os
+import logging
 import json
 
-# Wait for rabbitmq to come up
-print("Sleep")
-time.sleep(20)
-print("Wake up")
+class Consumer:
+    def __init__(self, queue_to_read, queues_to_write):
+        self.queue_to_read = queue_to_read
+        self.queues_to_write = queues_to_write
 
-consumer_id = os.environ["CONSUMER_ID"]
-connection = pika.BlockingConnection(
-    pika.ConnectionParameters(host='rabbitmq'))
-channel = connection.channel()
+    def start(self):
+        # Wait for rabbitmq to come up
+        time.sleep(30)
 
-channel.queue_declare(queue='task_queue', durable=True)
-print('[{}] Waiting for messages. To exit press CTRL+C'.format(consumer_id))
+        connection = pika.BlockingConnection(
+            pika.ConnectionParameters(host='rabbitmq'))
+        channel = connection.channel()
 
+        channel.queue_declare(queue=self.queue_to_read, durable=True)
 
-def callback(ch, method, properties, body):
-    print("[{}] Received {}".format(consumer_id, json.loads(body)))
-    if consumer_id == "1":
-        time.sleep(1)
-    print("[{}] Done".format(consumer_id))
-    ch.basic_ack(delivery_tag=method.delivery_tag)
+        for queue in self.queues_to_write:
+            channel.queue_declare(queue=queue, durable=True)
 
-channel.basic_qos(prefetch_count=1)
-channel.basic_consume(queue='task_queue', on_message_callback=callback)
+        channel.basic_qos(prefetch_count=1)
+        channel.basic_consume(queue=self.queue_to_read, on_message_callback=self.callback, auto_ack=True)
+        channel.start_consuming()
 
-channel.start_consuming()
+    def callback(self, ch, method, properties, body):
+        logging.debug(f"[CONSUMER] Received from queue {json.loads(body)}")
+        for queue in self.queues_to_write:
+            ch.basic_publish(
+                exchange='',
+                routing_key='',
+                body=body,
+                properties=pika.BasicProperties(
+                    delivery_mode=2,  # make message persistent
+                ))
+
