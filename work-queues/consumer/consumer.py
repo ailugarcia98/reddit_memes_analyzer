@@ -28,11 +28,11 @@ class Consumer:
         channel.start_consuming()
 
     def callback(self, ch, method, properties, body):
-        logging.debug(f"[CONSUMER] Received from queue {json.loads(body)}")
+        #logging.debug(f"[CONSUMER] Received from queue {json.loads(body)}")
         for queue in self.queues_to_write:
             ch.basic_publish(
                 exchange='',
-                routing_key='',
+                routing_key=queue,
                 body=body,
                 properties=pika.BasicProperties(
                     delivery_mode=2,  # make message persistent

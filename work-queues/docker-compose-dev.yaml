@@ -39,7 +39,7 @@ services:
       - PYTHONUNBUFFERED=1
       - CONSUMER_ID=1
       - QUEUE_TO_READ=post_queue
-      - QUEUES_TO_WRITE=queue_test_post
+      - QUEUES_TO_WRITE=queue_map_remove_columns
 
   consumer_comment:
     build:
@@ -55,3 +55,18 @@ services:
       - CONSUMER_ID=2
       - QUEUE_TO_READ=comments_queue
       - QUEUES_TO_WRITE=queue_test_comments
+
+  map_remove_columns:
+    build:
+      context: ./map_remove_columns
+      dockerfile: map_remove_columns.dockerfile
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - QUEUE_TO_READ=queue_map_remove_columns
+      - QUEUES_TO_WRITE=queue_map_remove_columns_dest
+

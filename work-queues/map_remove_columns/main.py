@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import logging
 import os
-from consumer import Consumer
+from map_remove_columns import MapRemoveColumns
 
 def initialize_config():
     config_params = {}
@@ -18,8 +18,8 @@ def initialize_config():
 def main():
     initialize_log()
     config_params = initialize_config()
-    consumer = Consumer(config_params["queue_to_read"], config_params["queues_to_write"])
-    consumer.start()
+    mrcolumns = MapRemoveColumns(config_params["queue_to_read"], config_params["queues_to_write"])
+    mrcolumns.start()
 
 def initialize_log():
     """
