@@ -26,10 +26,12 @@ class Consumer:
         channel.basic_qos(prefetch_count=1)
         channel.basic_consume(queue=self.queue_to_read, on_message_callback=self.callback, auto_ack=True)
         channel.start_consuming()
+        connection.close()
 
     def callback(self, ch, method, properties, body):
-        #logging.debug(f"[CONSUMER] Received from queue {json.loads(body)}")
         for queue in self.queues_to_write:
+            if json.loads(body) == json.dumps({}):
+                body = json.dumps({})
             ch.basic_publish(
                 exchange='',
                 routing_key=queue,
@@ -37,4 +39,6 @@ class Consumer:
                 properties=pika.BasicProperties(
                     delivery_mode=2,  # make message persistent
                 ))
+
+
 
