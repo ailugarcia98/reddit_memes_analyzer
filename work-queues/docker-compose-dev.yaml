@@ -82,5 +82,19 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - QUEUE_TO_READ=queue_reduce_agg_scores
-      - QUEUES_TO_WRITE=queue_join_score
+      - QUEUES_TO_WRITE=queue_reduce_avg_score
+
+  reduce_avg_scores:
+    build:
+      context: ./reduce_avg_scores
+      dockerfile: reduce_avg_scores.dockerfile
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - QUEUE_TO_READ=queue_reduce_avg_score
+      - QUEUES_TO_WRITE=queue_response
 
