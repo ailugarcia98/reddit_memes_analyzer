@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import logging
 import os
-from reduce_agg_scores import ReduceAggScores
+from reduce_avg_scores import ReduceAvgScores
 
 def initialize_config():
     config_params = {}
@@ -18,8 +18,8 @@ def initialize_config():
 def main():
     initialize_log()
     config_params = initialize_config()
-    rascores = ReduceAggScores(config_params["queue_to_read"], config_params["queues_to_write"])
-    rascores.start()
+    ravgscores = ReduceAvgScores(config_params["queue_to_read"], config_params["queues_to_write"])
+    ravgscores.start()
 
 def initialize_log():
     """
@@ -29,7 +29,7 @@ def initialize_log():
     """
     logging.basicConfig(
         format='%(asctime)s %(levelname)-8s %(message)s',
-        level=logging.DEBUG,
+        level=logging.INFO,
         datefmt='%Y-%m-%d %H:%M:%S',
     )
 

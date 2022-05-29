@@ -17,7 +17,7 @@ class Producer:
 
     def start(self):
         # Wait for rabbitmq to come up
-        time.sleep(30)
+        time.sleep(50)
         self.send_posts()
         self.send_comments()
         self.recv()
@@ -93,4 +93,4 @@ class Producer:
         connection.close()
 
     def callback(self, ch, method, properties, body):
-        logging.debug(f"[PRODUCER] Received avg {body.decode('utf-8')}")
+        logging.info(f"[PRODUCER] Received avg {body.decode('utf-8')}")

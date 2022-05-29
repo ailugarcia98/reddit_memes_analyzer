@@ -28,7 +28,7 @@ services:
 
   consumer_post:
     build:
-      context: ./consumer
+      context: workers/consumer
       dockerfile: consumer.dockerfile
     restart: on-failure
     depends_on:
@@ -43,7 +43,7 @@ services:
 
   consumer_comment:
     build:
-      context: ./consumer
+      context: workers/consumer
       dockerfile: consumer.dockerfile
     restart: on-failure
     depends_on:
@@ -58,7 +58,7 @@ services:
 
   map_remove_columns:
     build:
-      context: ./map_remove_columns
+      context: workers/map_remove_columns
       dockerfile: map_remove_columns.dockerfile
     restart: on-failure
     depends_on:
@@ -72,7 +72,7 @@ services:
 
   reduce_agg_scores:
     build:
-      context: ./reduce_agg_scores
+      context: workers/reduce_agg_scores
       dockerfile: reduce_agg_scores.dockerfile
     restart: on-failure
     depends_on:
@@ -86,7 +86,7 @@ services:
 
   reduce_avg_scores:
     build:
-      context: ./reduce_avg_scores
+      context: workers/reduce_avg_scores
       dockerfile: reduce_avg_scores.dockerfile
     restart: on-failure
     depends_on:
