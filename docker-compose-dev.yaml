@@ -20,11 +20,6 @@ services:
       - PYTHONUNBUFFERED=1
     volumes:
       - ./producer/csvs/:/csvs/
-    # healthcheck:
-    #     test: ["CMD", "curl", "-f", "http://rabbitmq:15672"]
-    #     interval: 10s
-    #     timeout: 5s
-    #     retries: 10
 
   consumer_post:
     build:
@@ -54,7 +49,7 @@ services:
       - PYTHONUNBUFFERED=1
       - CONSUMER_ID=2
       - QUEUE_TO_READ=comments_queue
-      - QUEUES_TO_WRITE=queue_test_comments
+      - QUEUES_TO_WRITE=queue_filter_deleted_removed
 
   map_remove_columns:
     build:
@@ -97,4 +92,18 @@ services:
       - PYTHONUNBUFFERED=1
       - QUEUE_TO_READ=queue_reduce_avg_score
       - QUEUES_TO_WRITE=queue_response
+
+  filter_deleted_removed:
+    build:
+      context: workers/filter_deleted_removed
+      dockerfile: filter_deleted_removed.dockerfile
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - QUEUE_TO_READ=queue_filter_deleted_removed
+      - QUEUES_TO_WRITE=queue_map_remove_columns_2
 
