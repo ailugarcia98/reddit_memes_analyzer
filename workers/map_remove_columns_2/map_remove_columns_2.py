@@ -4,7 +4,7 @@ import time
 import json
 import logging
 
-class FilterDeletedRemoved:
+class MapRemoveColumns2:
     def __init__(self, queue_to_read, queues_to_write):
         self.queue_to_read = queue_to_read
         self.queues_to_write = queues_to_write
@@ -25,8 +25,8 @@ class FilterDeletedRemoved:
         channel.start_consuming()
 
     def callback(self, ch, method, properties, body):
-        comments = json.loads(body)
-        if comments == {}:
+        comments = [json.loads(body)]
+        if comments == [{}]:
             new_body = json.dumps({})
             for queue in self.queues_to_write:
                 ch.basic_publish(
@@ -38,22 +38,19 @@ class FilterDeletedRemoved:
                 ))
         else:
             for comment in comments:
-                comments_not_deleted_removed = self.new_body(comment)
-                if comments_not_deleted_removed != json.dumps("removed/deleted"):
-                    for queue in self.queues_to_write:
-                        ch.basic_publish(
-                            exchange='',
-                            routing_key=queue,
-                            body=comments_not_deleted_removed,
-                            properties=pika.BasicProperties(
-                                delivery_mode=2,  # make message persistent
-                            ))
+                new_body = self.new_body(comment)
+                for queue in self.queues_to_write:
+                    ch.basic_publish(
+                        exchange='',
+                        routing_key=queue,
+                        body=new_body,
+                        properties=pika.BasicProperties(
+                            delivery_mode=2,  # make message persistent
+                        ))
 
-    def new_body(self, comment):
-        if comment["body"]=="[removed]" or comment["body"]=="[deleted]":
-            new_comment = "removed/deleted"
-        else:
-            new_comment = comment
-        return json.dumps(new_comment)
+    def new_body(self, body):
+        post_id = body["permalink"].split('/')[6]
+        body["post_id"] = post_id
+        return f'{body["post_id"]}, {body["body"]}, {body["score"]}, {body["sentiment"]}'
 
 

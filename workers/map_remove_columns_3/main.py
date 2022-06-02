@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 import logging
 import os
-from consumer import Consumer
+from map_remove_columns_3 import MapRemoveColumns3
 
 def initialize_config():
     config_params = {}
     try:
         config_params["queue_to_read"] = os.environ["QUEUE_TO_READ"]
-        config_params["queues_to_write"] = os.environ["QUEUES_TO_WRITE"].split("|")
+        config_params["queues_to_write"] = [os.environ["QUEUES_TO_WRITE"]] #add split
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting".format(e))
     except ValueError as e:
@@ -18,8 +18,8 @@ def initialize_config():
 def main():
     initialize_log()
     config_params = initialize_config()
-    consumer = Consumer(config_params["queue_to_read"], config_params["queues_to_write"])
-    consumer.start()
+    mrcolumns3 = MapRemoveColumns3(config_params["queue_to_read"], config_params["queues_to_write"])
+    mrcolumns3.start()
 
 def initialize_log():
     """

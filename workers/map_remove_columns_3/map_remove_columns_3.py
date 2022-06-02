@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 import pika
 import time
-import os
-import logging
 import json
+import logging
 
-class ReduceAggScores:
+class MapRemoveColumns3:
     def __init__(self, queue_to_read, queues_to_write):
         self.queue_to_read = queue_to_read
         self.queues_to_write = queues_to_write
-        self.count_posts = 0
-        self.sum_score = 0
 
     def start(self):
         time.sleep(10)
@@ -28,24 +25,31 @@ class ReduceAggScores:
         channel.start_consuming()
 
     def callback(self, ch, method, properties, body):
-        post = body.decode('utf-8')
-        if post == '{}':
-            new_body = self.new_body()
+        posts = json.loads(body)
+        if posts == {}:
+            new_body = json.dumps({})
             for queue in self.queues_to_write:
                 ch.basic_publish(
                     exchange='',
-                    routing_key=queue,
-                    body=new_body,
-                    properties=pika.BasicProperties(
-                        delivery_mode=2,  # make message persistent
-                    ))
+                routing_key=queue,
+                body=new_body,
+                properties=pika.BasicProperties(
+                    delivery_mode=2,  # make message persistent
+                ))
         else:
-            self.count_posts += 1
-            self.sum_score += int(post.split(',')[1])
+            for post in posts:
+                new_body = self.new_body(post).encode('utf-8')
+                logging.info(f"[MRC3] {new_body}")
+                for queue in self.queues_to_write:
+                    ch.basic_publish(
+                        exchange='',
+                        routing_key=queue,
+                        body=new_body,
+                        properties=pika.BasicProperties(
+                            delivery_mode=2,  # make message persistent
+                        ))
 
-    def new_body(self):
-        return f'{self.sum_score}, {self.count_posts}'
-
-
+    def new_body(self, body):
+        return f'{body["id"]}, {body["url"]}'
 
 

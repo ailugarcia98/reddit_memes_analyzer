@@ -12,7 +12,7 @@ class Consumer:
 
     def start(self):
         # Wait for rabbitmq to come up
-        time.sleep(50)
+        time.sleep(10)
 
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='rabbitmq'))

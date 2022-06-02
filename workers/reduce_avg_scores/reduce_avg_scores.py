@@ -12,7 +12,7 @@ class ReduceAvgScores:
         self.avg_score = 0
 
     def start(self):
-        time.sleep(50)
+        time.sleep(10)
 
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='rabbitmq'))

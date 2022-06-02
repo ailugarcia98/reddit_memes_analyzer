@@ -10,7 +10,7 @@ class MapRemoveColumns:
         self.queues_to_write = queues_to_write
 
     def start(self):
-        time.sleep(50)
+        time.sleep(10)
 
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='rabbitmq'))
