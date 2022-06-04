@@ -54,8 +54,6 @@ class Join:
                         post_url = post.split(',')[1]
                         new_body.append(f'{comment}, {post_url}')
 
-        logging.info(f"[JOIN] {new_body}")
-
         for queue in self.queues_to_write:
             ch.basic_publish(
                 exchange='',
