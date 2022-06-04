@@ -91,7 +91,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - QUEUE_TO_READ=queue_reduce_avg_score
-      - QUEUES_TO_WRITE=queue_response
+      - QUEUES_TO_WRITE=queue_response|queue_response_url
 
   filter_deleted_removed:
     build:
@@ -177,3 +177,18 @@ services:
       - PYTHONUNBUFFERED=1
       - QUEUE_TO_READ=queue_filter_body_student
       - QUEUES_TO_WRITE=queue_filter_score_mayor_avg
+
+  filter_score_mayor_avg:
+    build:
+      context: workers/filter_score_mayor_avg
+      dockerfile: filter_score_mayor_avg.dockerfile
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - QUEUE_TO_READ_AVG=queue_response_url
+      - QUEUE_TO_READ_FILTER=queue_filter_score_mayor_avg
+      - QUEUES_TO_WRITE=queue_response_2

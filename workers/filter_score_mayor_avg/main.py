@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 import logging
 import os
-from reduce_avg_scores import ReduceAvgScores
+from filter_score_mayor_avg import FilterScoreMayorAvg
 
 def initialize_config():
     config_params = {}
     try:
-        config_params["queue_to_read"] = os.environ["QUEUE_TO_READ"]
-        config_params["queues_to_write"] = os.environ["QUEUES_TO_WRITE"].split('|')
+        config_params["queue_to_read_avg"] = os.environ["QUEUE_TO_READ_AVG"]
+        config_params["queue_to_read_filter"] = os.environ["QUEUE_TO_READ_FILTER"]
+        config_params["queues_to_write"] = [os.environ["QUEUES_TO_WRITE"]]
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting".format(e))
     except ValueError as e:
@@ -18,8 +19,8 @@ def initialize_config():
 def main():
     initialize_log()
     config_params = initialize_config()
-    ravgscores = ReduceAvgScores(config_params["queue_to_read"], config_params["queues_to_write"])
-    ravgscores.start()
+    filter = FilterScoreMayorAvg(config_params["queue_to_read_avg"], config_params["queue_to_read_filter"], config_params["queues_to_write"])
+    filter.start()
 
 def initialize_log():
     """

@@ -27,13 +27,13 @@ class FilterBodyStudent:
     def callback(self, ch, method, properties, body):
         comments = eval(body)
         for comment in comments:
-            comments_not_deleted_removed = self.new_body(comment)
-            if comments_not_deleted_removed != str(""):
+            comments_students = self.new_body(comment)
+            if comments_students != str(""):
                 for queue in self.queues_to_write:
                     ch.basic_publish(
                         exchange='',
                         routing_key=queue,
-                        body=comments_not_deleted_removed,
+                        body=comments_students,
                         properties=pika.BasicProperties(
                             delivery_mode=2,  # make message persistent
                         ))
@@ -42,9 +42,9 @@ class FilterBodyStudent:
         comment_body = str(comment.split(',')[1])
         if comment_body.__contains__("university") or comment_body.__contains__("college") or comment_body.__contains__("student") \
                 or comment_body.__contains__("teacher") or comment_body.__contains__("professor"):
-            new_comment = ""
+            new_comment = f"{comment.split(', ')[0]}, {comment.split(', ')[2]}, {comment.split(', ')[4]}"
         else:
-            new_comment = comment
+            new_comment = ""
         return str(new_comment)
 
 

@@ -7,13 +7,14 @@ import json
 
 class Producer:
     def __init__(self, post_queue_name, post_file, comments_queue_name, \
-                 comments_file, size_send, queue_response):
+                 comments_file, size_send, queue_response_avg, queue_response_url):
         self.post_queue_name = post_queue_name
         self.comments_queue_name = comments_queue_name
         self.post_file = post_file
         self.comments_file = comments_file
         self.size_send = size_send #how many records Producer can send at the same time
-        self.queue_response = queue_response
+        self.queue_response_avg = queue_response_avg
+        self.queue_response_url = queue_response_url
 
     def start(self):
         # Wait for rabbitmq to come up
@@ -85,12 +86,20 @@ class Producer:
             pika.ConnectionParameters(host='rabbitmq'))
         channel = connection.channel()
 
-        channel.queue_declare(queue=self.queue_response, durable=True)
-
+        channel.queue_declare(queue=self.queue_response_avg, durable=True)
         channel.basic_qos(prefetch_count=1)
-        channel.basic_consume(queue=self.queue_response, on_message_callback=self.callback, auto_ack=True)
+        channel.basic_consume(queue=self.queue_response_avg, on_message_callback=self.callback_avg, auto_ack=True)
+
+        channel.queue_declare(queue=self.queue_response_url, durable=True)
+        channel.basic_qos(prefetch_count=1)
+        channel.basic_consume(queue=self.queue_response_url, on_message_callback=self.callback_url, auto_ack=True)
+
         channel.start_consuming()
+
         connection.close()
 
-    def callback(self, ch, method, properties, body):
+    def callback_avg(self, ch, method, properties, body):
         logging.info(f"[PRODUCER] Received avg {body.decode('utf-8')}")
+
+    def callback_url(self, ch, method, properties, body):
+        logging.info(f"[PRODUCER] Received url {body.decode('utf-8')}")
