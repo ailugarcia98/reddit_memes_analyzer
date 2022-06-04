@@ -4,7 +4,7 @@ import time
 import json
 import logging
 
-class FilterBodyStudent:
+class MapRemoveColumns4:
     def __init__(self, queue_to_read, queues_to_write):
         self.queue_to_read = queue_to_read
         self.queues_to_write = queues_to_write
@@ -25,26 +25,33 @@ class FilterBodyStudent:
         channel.start_consuming()
 
     def callback(self, ch, method, properties, body):
-        comments = eval(body)
-        for comment in comments:
-            comments_students = self.new_body(comment)
-            if comments_students != str(""):
+        comments = eval(body.decode('utf-8'))
+        if comments == {}:
+            new_body = str({}).encode('utf-8')
+            for queue in self.queues_to_write:
+                ch.basic_publish(
+                    exchange='',
+                    routing_key=queue,
+                    body=new_body,
+                    properties=pika.BasicProperties(
+                        delivery_mode=2,  # make message persistent
+                    ))
+        else:
+            for comment in comments:
+                new_body = self.new_body(comment).encode('utf-8')
                 for queue in self.queues_to_write:
                     ch.basic_publish(
                         exchange='',
                         routing_key=queue,
-                        body=comments_students,
+                        body=new_body,
                         properties=pika.BasicProperties(
                             delivery_mode=2,  # make message persistent
                         ))
 
-    def new_body(self, comment):
-        comment_body = str(comment.split(',')[1])
-        if comment_body.__contains__("university") or comment_body.__contains__("college") or comment_body.__contains__("student") \
-                or comment_body.__contains__("teacher") or comment_body.__contains__("professor"):
-            new_comment = f"{comment.split(',')[0]},{comment.split(',')[2]},{comment.split(',')[4]}"
-        else:
-            new_comment = ""
-        return str(new_comment)
+    def new_body(self, body):
+        post_id = str(body.split(',')[0])
+        sentiment = str(body.split(',')[3])
+        url = str(body.split(',')[4])
+        return f"{post_id}, {sentiment}, {url}"
 
 

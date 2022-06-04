@@ -150,20 +150,6 @@ services:
       - QUEUE_TO_READ_3=queue_join_2
       - QUEUES_TO_WRITE=queue_filter_body_student|queue_map_remove_columns_4
 
-#  map_remove_columns_4:
-#    build:
-#      context: workers/map_remove_columns_4
-#      dockerfile: map_remove_columns_34.dockerfile
-#    restart: on-failure
-#    depends_on:
-#      - rabbitmq
-#    links:
-#      - rabbitmq
-#    environment:
-#      - PYTHONUNBUFFERED=1
-#      - QUEUE_TO_READ=queue_map_remove_columns_4
-#      - QUEUES_TO_WRITE=queue_reduce_agg_sentiment
-
   filter_body_student:
     build:
       context: workers/filter_body_student
@@ -192,3 +178,31 @@ services:
       - QUEUE_TO_READ_AVG=queue_response_url
       - QUEUE_TO_READ_FILTER=queue_filter_score_mayor_avg
       - QUEUES_TO_WRITE=queue_response_2
+
+  map_remove_columns_4:
+    build:
+      context: workers/map_remove_columns_4
+      dockerfile: map_remove_columns_4.dockerfile
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - QUEUE_TO_READ=queue_map_remove_columns_4
+      - QUEUES_TO_WRITE=queue_reduce_agg_sentiment
+
+  reduce_agg_sentiment:
+    build:
+      context: workers/reduce_agg_sentiment
+      dockerfile: reduce_agg_sentiment.dockerfile
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - QUEUE_TO_READ=queue_reduce_agg_sentiment
+      - QUEUES_TO_WRITE=queue_reduce_post_id

@@ -39,7 +39,6 @@ class FilterScoreMayorAvg:
         if score_body > self.avg:
             url = str(body.decode('utf-8').split(',')[2])
             for queue in self.queues_to_write:
-                logging.info(f"[FILTER] SENDING {queue}")
                 ch.basic_publish(
                     exchange='',
                     routing_key=queue,

@@ -51,6 +51,6 @@ class MapRemoveColumns2:
     def new_body(self, body):
         post_id = body["permalink"].split('/')[6]
         body["post_id"] = post_id
-        return f'{body["post_id"]}, {body["body"]}, {body["score"]}, {body["sentiment"]}'
+        return f'{body["post_id"]},{body["body"]},{body["score"]},{body["sentiment"]}'
 
 

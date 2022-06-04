@@ -49,6 +49,6 @@ class MapRemoveColumns3:
                         ))
 
     def new_body(self, body):
-        return f'{body["id"]}, {body["url"]}'
+        return f'{body["id"]},{body["url"]}'
 
 

@@ -53,15 +53,24 @@ class Join:
                     if post_id == comment_post_id:
                         post_url = post.split(',')[1]
                         new_body.append(f'{comment}, {post_url}')
+            else:
+                queue = "queue_map_remove_columns_4"
+                ch.basic_publish(
+                    exchange='',
+                    routing_key=queue,
+                    body=str({}).encode('utf-8'),
+                    properties=pika.BasicProperties(
+                        delivery_mode=2,  # make message persistent
+                    ))
 
         for queue in self.queues_to_write:
-            ch.basic_publish(
-                exchange='',
-                routing_key=queue,
-                body=str(new_body).encode('utf-8'),
-                properties=pika.BasicProperties(
-                    delivery_mode=2,  # make message persistent
-                ))
+                ch.basic_publish(
+                    exchange='',
+                    routing_key=queue,
+                    body=str(new_body).encode('utf-8'),
+                    properties=pika.BasicProperties(
+                        delivery_mode=2,  # make message persistent
+                    ))
 
 
 
