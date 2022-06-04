@@ -10,7 +10,7 @@ class MapRemoveColumns3:
         self.queues_to_write = queues_to_write
 
     def start(self):
-        time.sleep(10)
+        time.sleep(20)
 
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='rabbitmq'))
@@ -39,7 +39,6 @@ class MapRemoveColumns3:
         else:
             for post in posts:
                 new_body = self.new_body(post).encode('utf-8')
-                logging.info(f"[MRC3] {new_body}")
                 for queue in self.queues_to_write:
                     ch.basic_publish(
                         exchange='',

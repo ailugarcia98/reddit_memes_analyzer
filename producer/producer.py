@@ -17,7 +17,7 @@ class Producer:
 
     def start(self):
         # Wait for rabbitmq to come up
-        time.sleep(10)
+        time.sleep(20)
         self.send_posts()
         self.send_comments()
         self.recv()

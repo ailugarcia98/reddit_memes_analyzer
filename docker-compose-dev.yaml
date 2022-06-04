@@ -135,16 +135,17 @@ services:
       - QUEUE_TO_READ=queue_map_remove_columns_3
       - QUEUES_TO_WRITE=queue_join_2
 
-#  join:
-#    build:
-#      context: workers/join
-#      dockerfile: join.dockerfile
-#    restart: on-failure
-#    depends_on:
-#      - rabbitmq
-#    links:
-#      - rabbitmq
-#    environment:
-#      - PYTHONUNBUFFERED=1
-#      - QUEUE_TO_READ=queue_join|queue_join_2
-#      - QUEUES_TO_WRITE=queue_filter_body_student|queue_map_remove_columns_4
+  join:
+    build:
+      context: workers/join
+      dockerfile: join.dockerfile
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - QUEUE_TO_READ_2=queue_join
+      - QUEUE_TO_READ_3=queue_join_2
+      - QUEUES_TO_WRITE=queue_filter_body_student|queue_map_remove_columns_4

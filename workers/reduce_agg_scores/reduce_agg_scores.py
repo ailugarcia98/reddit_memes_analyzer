@@ -13,7 +13,7 @@ class ReduceAggScores:
         self.sum_score = 0
 
     def start(self):
-        time.sleep(10)
+        time.sleep(20)
 
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='rabbitmq'))
