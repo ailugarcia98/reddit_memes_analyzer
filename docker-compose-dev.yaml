@@ -220,3 +220,17 @@ services:
       - PYTHONUNBUFFERED=1
       - QUEUE_TO_READ=queue_reduce_post_id
       - QUEUES_TO_WRITE=queue_find_max_sent_avg
+
+  find_max_sent_avg:
+    build:
+      context: workers/find_max_sent_avg
+      dockerfile: find_max_sent_avg.dockerfile
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - QUEUE_TO_READ=queue_find_max_sent_avg
+      - QUEUES_TO_WRITE=queue_map_remove_columns_5
