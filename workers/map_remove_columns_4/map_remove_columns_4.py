@@ -25,20 +25,14 @@ class MapRemoveColumns4:
         channel.basic_consume(queue=self.queue_to_read, on_message_callback=self.callback, auto_ack=True)
         channel.start_consuming()
 
+    def sentiment_not_null(self, comment):
+        sentiment = str(comment.split(',')[3])
+        return sentiment != str('')
+
     def callback(self, ch, method, properties, body):
         comments = eval(body.decode('utf-8'))
-        if comments == {}:
-            new_body = str({}).encode('utf-8')
-            for queue in self.queues_to_write:
-                ch.basic_publish(
-                    exchange='',
-                    routing_key=queue,
-                    body=new_body,
-                    properties=pika.BasicProperties(
-                        delivery_mode=2,  # make message persistent
-                    ))
-        else:
-            for comment in comments:
+        for comment in comments:
+            if comment != str({}) and self.sentiment_not_null(comment):
                 new_body = self.new_body(comment).encode('utf-8')
                 for queue in self.queues_to_write:
                     ch.basic_publish(
@@ -48,6 +42,16 @@ class MapRemoveColumns4:
                         properties=pika.BasicProperties(
                             delivery_mode=2,  # make message persistent
                         ))
+            else:
+                if comment == str({}):
+                    for queue in self.queues_to_write:
+                        ch.basic_publish(
+                            exchange='',
+                            routing_key=queue,
+                            body=str({}),
+                            properties=pika.BasicProperties(
+                                delivery_mode=2,  # make message persistent
+                            ))
 
     def new_body(self, body):
         post_id = str(body.split(',')[0])

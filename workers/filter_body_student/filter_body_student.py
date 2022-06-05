@@ -27,16 +27,17 @@ class FilterBodyStudent:
     def callback(self, ch, method, properties, body):
         comments = eval(body)
         for comment in comments:
-            comments_students = self.new_body(comment)
-            if comments_students != str(""):
-                for queue in self.queues_to_write:
-                    ch.basic_publish(
-                        exchange='',
-                        routing_key=queue,
-                        body=comments_students,
-                        properties=pika.BasicProperties(
-                            delivery_mode=2,  # make message persistent
-                        ))
+            if comment != str({}):
+                comments_students = self.new_body(comment)
+                if comments_students != str(""):
+                    for queue in self.queues_to_write:
+                        ch.basic_publish(
+                            exchange='',
+                            routing_key=queue,
+                            body=comments_students,
+                            properties=pika.BasicProperties(
+                                delivery_mode=2,  # make message persistent
+                            ))
 
     def new_body(self, comment):
         comment_body = str(comment.split(',')[1])

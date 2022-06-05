@@ -4,6 +4,7 @@ import time
 import json
 import logging
 
+
 class FilterDeletedRemoved:
     def __init__(self, queue_to_read, queues_to_write):
         self.queue_to_read = queue_to_read
@@ -50,7 +51,7 @@ class FilterDeletedRemoved:
                             ))
 
     def new_body(self, comment):
-        if comment["body"]=="[removed]" or comment["body"]=="[deleted]":
+        if comment["body"] == "[removed]" or comment["body"] == "[deleted]":
             new_comment = "removed/deleted"
         else:
             new_comment = comment

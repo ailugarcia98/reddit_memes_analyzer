@@ -5,6 +5,7 @@ import os
 import logging
 import json
 
+
 class Consumer:
     def __init__(self, queue_to_read, queues_to_write):
         self.queue_to_read = queue_to_read
