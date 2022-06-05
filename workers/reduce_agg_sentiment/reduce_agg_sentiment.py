@@ -30,7 +30,7 @@ class ReduceAggSentiment:
     def callback(self, ch, method, properties, body):
         comment = body.decode('utf-8')
         if comment == str({}):
-            new_body = json.dumps(self.agg()).encode('utf-8')
+            new_body = str(self.agg()).encode('utf-8')
             for queue in self.queues_to_write:
                 ch.basic_publish(
                     exchange='',
@@ -52,7 +52,11 @@ class ReduceAggSentiment:
 
     def agg(self):
         old_body = {}
+        new_body = []
+        urls = []
         for post_id, url, sentiment, count in self.dict_sentiment:
+            if url not in urls:
+                urls.append(url)
             try:
                 prev_sentiment, prev_count = old_body[url]
             except KeyError:
@@ -61,6 +65,10 @@ class ReduceAggSentiment:
                 new_sentiment = float(sentiment) + float(prev_sentiment)
                 new_count = int(prev_count) + int(count)
                 old_body[url] = new_sentiment, new_count
-        return old_body
+
+        for url in urls:
+            new_body.append([url, old_body[url][0], old_body[url][1]])
+
+        return new_body
 
 

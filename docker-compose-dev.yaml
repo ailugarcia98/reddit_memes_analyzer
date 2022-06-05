@@ -206,3 +206,17 @@ services:
       - PYTHONUNBUFFERED=1
       - QUEUE_TO_READ=queue_reduce_agg_sentiment
       - QUEUES_TO_WRITE=queue_reduce_post_id
+
+  reduce_post_id:
+    build:
+      context: workers/reduce_post_id
+      dockerfile: reduce_post_id.dockerfile
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - QUEUE_TO_READ=queue_reduce_post_id
+      - QUEUES_TO_WRITE=queue_find_max_sent_avg
