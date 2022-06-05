@@ -5,6 +5,7 @@ import os
 import logging
 import json
 
+
 class ReduceAggSentiment:
     def __init__(self, queue_to_read, queues_to_write):
         self.queue_to_read = queue_to_read
@@ -30,7 +31,6 @@ class ReduceAggSentiment:
         comment = body.decode('utf-8')
         if comment == str({}):
             new_body = json.dumps(self.agg()).encode('utf-8')
-            logging.info(f"[REDUCE] {new_body}")
             for queue in self.queues_to_write:
                 ch.basic_publish(
                     exchange='',
@@ -44,12 +44,11 @@ class ReduceAggSentiment:
 
     def new_body(self, comment):
         maybe_sentiment = comment.split(',')[1]
-        logging.info(f"MAYBE SENTIMENT {maybe_sentiment}")
         if maybe_sentiment != str(''):
             sentiment = float(comment.split(',')[1])
             post_id = comment.split(',')[0]
             url = comment.split(',')[2]
-            self.dict_sentiment.append((post_id,url,sentiment,int(1)))
+            self.dict_sentiment.append((post_id,  url, sentiment, int(1)))
 
     def agg(self):
         old_body = {}

@@ -4,6 +4,7 @@ import time
 import json
 import logging
 
+
 class MapRemoveColumns4:
     def __init__(self, queue_to_read, queues_to_write):
         self.queue_to_read = queue_to_read
@@ -52,6 +53,6 @@ class MapRemoveColumns4:
         post_id = str(body.split(',')[0])
         sentiment = str(body.split(',')[3])
         url = str(body.split(',')[4])
-        return f"{post_id}, {sentiment}, {url}"
+        return f"{post_id},{sentiment},{url}"
 
 

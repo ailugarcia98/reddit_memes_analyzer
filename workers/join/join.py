@@ -5,6 +5,7 @@ import os
 import logging
 import json
 
+
 class Join:
     def __init__(self, queue_to_read_2, queue_to_read_3, queues_to_write):
         self.queue_to_read_comments = queue_to_read_2
@@ -12,6 +13,8 @@ class Join:
         self.queues_to_write = queues_to_write
         self.posts = []
         self.comments = []
+        self.new_body = []
+        self.end = False
 
     def start(self):
         # Wait for rabbitmq to come up
@@ -36,41 +39,45 @@ class Join:
         connection.close()
 
     def callback_post(self, ch, method, properties, body):
-        if body.decode('utf-8') != {}:
-            self.posts.append(body.decode('utf-8'))
+        self.posts.append(body.decode('utf-8'))
 
     def callback_comments(self, ch, method, properties, body):
-        if body.decode('utf-8') != {}:
-            self.comments.append(body.decode('utf-8'))
-
-        new_body = []
+        self.comments.append(body.decode('utf-8'))
 
         for post in self.posts:
-            if str(post) != str({}):
-                post_id = post.split(',')[0]
-                for comment in self.comments:
+            post_id = post.split(',')[0]
+            for comment in self.comments:
+                if post == str({}) and comment == str({}):
+                    self.end = True
+                    continue
+                else:
                     comment_post_id = comment.split(',')[0]
                     if post_id == comment_post_id:
                         post_url = post.split(',')[1]
-                        new_body.append(f'{comment}, {post_url}')
-            else:
-                queue = "queue_map_remove_columns_4"
-                ch.basic_publish(
-                    exchange='',
-                    routing_key=queue,
-                    body=str({}).encode('utf-8'),
-                    properties=pika.BasicProperties(
-                        delivery_mode=2,  # make message persistent
-                    ))
+                        if len(self.new_body) < 15:
+                            self.new_body.append(f'{comment},{post_url}')
+                        else:
+                            for queue in self.queues_to_write:
+                                ch.basic_publish(
+                                    exchange='',
+                                    routing_key=queue,
+                                    body=str(self.new_body).encode('utf-8'),
+                                    properties=pika.BasicProperties(
+                                        delivery_mode=2,  # make message persistent
+                                    ))
+                            self.new_body = []
 
-        for queue in self.queues_to_write:
-                ch.basic_publish(
-                    exchange='',
-                    routing_key=queue,
-                    body=str(new_body).encode('utf-8'),
-                    properties=pika.BasicProperties(
-                        delivery_mode=2,  # make message persistent
-                    ))
+        if self.end:
+            queue = "queue_map_remove_columns_4"
+            ch.basic_publish(
+                exchange='',
+                routing_key=queue,
+                body=str({}).encode('utf-8'),
+                properties=pika.BasicProperties(
+                    delivery_mode=2,  # make message persistent
+                ))
+
+
 
 
 

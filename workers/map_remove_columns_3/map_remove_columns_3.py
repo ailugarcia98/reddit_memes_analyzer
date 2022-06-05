@@ -4,6 +4,7 @@ import time
 import json
 import logging
 
+
 class MapRemoveColumns3:
     def __init__(self, queue_to_read, queues_to_write):
         self.queue_to_read = queue_to_read
