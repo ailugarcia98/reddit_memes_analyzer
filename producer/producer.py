@@ -113,5 +113,5 @@ class Producer:
 
     def callback_meme(self, ch, method, properties, body):
         meme_file = body
-        open("/meme1/meme_downloaded.jpg", "wb").write(meme_file)
+        open("/meme/meme_downloaded.jpg", "wb").write(meme_file)
         logging.info(f"[PRODUCER] Received meme")
