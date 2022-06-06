@@ -20,8 +20,6 @@ class Producer:
         self.queue_response_meme = queue_response_meme
 
     def start(self):
-        # Wait for rabbitmq to come up
-        time.sleep(20)
         self.send_posts()
         self.send_comments()
         self.recv()
