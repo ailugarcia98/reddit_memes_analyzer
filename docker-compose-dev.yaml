@@ -234,3 +234,17 @@ services:
       - PYTHONUNBUFFERED=1
       - QUEUE_TO_READ=queue_find_max_sent_avg
       - QUEUES_TO_WRITE=queue_map_remove_columns_5
+
+  map_remove_columns_5:
+    build:
+      context: workers/map_remove_columns_5
+      dockerfile: map_remove_columns_5.dockerfile
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - QUEUE_TO_READ=queue_map_remove_columns_5
+      - QUEUES_TO_WRITE=queue_download_meme
