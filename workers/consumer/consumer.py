@@ -12,8 +12,6 @@ class Consumer:
         self.queues_to_write = queues_to_write
 
     def start(self):
-        # Wait for rabbitmq to come up
-        time.sleep(20)
 
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='rabbitmq'))

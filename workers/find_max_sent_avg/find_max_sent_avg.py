@@ -14,7 +14,6 @@ class FindMaxSentAvg:
         self.max_avg = 0.0
 
     def start(self):
-        time.sleep(20)
 
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='rabbitmq'))

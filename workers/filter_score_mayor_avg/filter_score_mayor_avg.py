@@ -5,6 +5,7 @@ import os
 import logging
 import json
 
+
 class FilterScoreMayorAvg:
     def __init__(self, queue_to_read_avg, queue_to_read_filter, queues_to_write):
         self.queue_to_read_avg = queue_to_read_avg
@@ -13,8 +14,6 @@ class FilterScoreMayorAvg:
         self.avg = 0.0
 
     def start(self):
-        # Wait for rabbitmq to come up
-        time.sleep(20)
 
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='rabbitmq'))

@@ -5,6 +5,7 @@ import os
 import logging
 import json
 
+
 class ReduceAggScores:
     def __init__(self, queue_to_read, queues_to_write):
         self.queue_to_read = queue_to_read
@@ -13,7 +14,6 @@ class ReduceAggScores:
         self.sum_score = 0
 
     def start(self):
-        time.sleep(20)
 
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='rabbitmq'))

@@ -13,7 +13,6 @@ class ReduceAggSentiment:
         self.dict_sentiment = []
 
     def start(self):
-        time.sleep(20)
 
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='rabbitmq'))

@@ -10,7 +10,6 @@ class FilterBodyStudent:
         self.queues_to_write = queues_to_write
 
     def start(self):
-        time.sleep(20)
 
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='rabbitmq'))

@@ -20,8 +20,6 @@ class Producer:
         self.queue_response_meme = queue_response_meme
 
     def start(self):
-        # Wait for rabbitmq to come up
-        time.sleep(20)
         self.send_posts()
         self.send_comments()
         self.recv()
@@ -113,5 +111,5 @@ class Producer:
 
     def callback_meme(self, ch, method, properties, body):
         meme_file = body
-        open("/meme1/meme_downloaded.jpg", "wb").write(meme_file)
+        open("/meme/meme_downloaded.jpg", "wb").write(meme_file)
         logging.info(f"[PRODUCER] Received meme")
