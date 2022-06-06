@@ -26,6 +26,7 @@ def initialize_config():
         config_params["size_send"] = int(config["DEFAULT"]["size_send"])
         config_params["queue_response_avg"] = config["DEFAULT"]["queue_response"].split('|')[0]
         config_params["queue_response_url"] = config["DEFAULT"]["queue_response"].split('|')[1]
+        config_params["queue_response_meme"] = config["DEFAULT"]["queue_response"].split('|')[2]
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting".format(e))
     except ValueError as e:
@@ -41,7 +42,7 @@ def main():
     producer = Producer(config_params["post_queue_name"], config_params["post_file"], \
                         config_params["comments_queue_name"], config_params["comments_file"], \
                         config_params["size_send"], config_params["queue_response_avg"], \
-                        config_params["queue_response_url"])
+                        config_params["queue_response_url"], config_params["queue_response_meme"])
     producer.start()
 
 def initialize_log():

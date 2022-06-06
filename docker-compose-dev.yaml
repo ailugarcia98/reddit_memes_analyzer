@@ -20,6 +20,7 @@ services:
       - PYTHONUNBUFFERED=1
     volumes:
       - ./producer/csvs/:/csvs/
+      - ./producer/meme/:/meme/
 
   consumer_post:
     build:
@@ -248,3 +249,17 @@ services:
       - PYTHONUNBUFFERED=1
       - QUEUE_TO_READ=queue_map_remove_columns_5
       - QUEUES_TO_WRITE=queue_download_meme
+
+  download_meme:
+    build:
+      context: workers/download_meme
+      dockerfile: download_meme.dockerfile
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - QUEUE_TO_READ=queue_download_meme
+      - QUEUES_TO_WRITE=queue_response_3

@@ -5,9 +5,11 @@ import time
 import csv
 import json
 
+
 class Producer:
     def __init__(self, post_queue_name, post_file, comments_queue_name, \
-                 comments_file, size_send, queue_response_avg, queue_response_url):
+                 comments_file, size_send, queue_response_avg, queue_response_url, \
+                 queue_response_meme):
         self.post_queue_name = post_queue_name
         self.comments_queue_name = comments_queue_name
         self.post_file = post_file
@@ -15,6 +17,7 @@ class Producer:
         self.size_send = size_send #how many records Producer can send at the same time
         self.queue_response_avg = queue_response_avg
         self.queue_response_url = queue_response_url
+        self.queue_response_meme = queue_response_meme
 
     def start(self):
         # Wait for rabbitmq to come up
@@ -94,6 +97,10 @@ class Producer:
         channel.basic_qos(prefetch_count=1)
         channel.basic_consume(queue=self.queue_response_url, on_message_callback=self.callback_url, auto_ack=True)
 
+        channel.queue_declare(queue=self.queue_response_meme, durable=True)
+        channel.basic_qos(prefetch_count=1)
+        channel.basic_consume(queue=self.queue_response_meme, on_message_callback=self.callback_meme, auto_ack=True)
+
         channel.start_consuming()
 
         connection.close()
@@ -103,3 +110,8 @@ class Producer:
 
     def callback_url(self, ch, method, properties, body):
         logging.info(f"[PRODUCER] Received url {body.decode('utf-8')}")
+
+    def callback_meme(self, ch, method, properties, body):
+        meme_file = body
+        open("/meme1/meme_downloaded.jpg", "wb").write(meme_file)
+        logging.info(f"[PRODUCER] Received meme")
