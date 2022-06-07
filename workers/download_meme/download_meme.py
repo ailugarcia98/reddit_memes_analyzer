@@ -27,18 +27,21 @@ class DownloadMeme:
 
     def callback(self, ch, method, properties, body):
         meme_to_download = body.decode('utf-8')
-        meme_downloaded = str(self.download_meme(meme_to_download))
-        for queue in self.queues_to_write:
-            ch.basic_publish(
-                exchange='',
-                routing_key=queue,
-                body=meme_downloaded,
-                properties=pika.BasicProperties(
-                    delivery_mode=2,  # make message persistent
-                ))
+        meme_downloaded = self.download_meme(meme_to_download)
+        if meme_downloaded is not None:
+            for queue in self.queues_to_write:
+                ch.basic_publish(
+                    exchange='',
+                    routing_key=queue,
+                    body=meme_downloaded,
+                    properties=pika.BasicProperties(
+                        delivery_mode=2,  # make message persistent
+                    ))
 
     def download_meme(self, url):
-        meme = requests.get(url)
+        response = requests.get(url)
+        if response.status_code == 200:
+            meme = response.content
+        else:
+            meme = None
         return meme
-
-
