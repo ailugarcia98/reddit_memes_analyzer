@@ -22,6 +22,7 @@ def main():
     middleware = Middleware('rabbitmq')
     consumer = Consumer(config_params["queue_to_read"], config_params["queues_to_write"], middleware)
     consumer.start()
+    middleware.close()
 
 def initialize_log():
     """

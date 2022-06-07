@@ -22,6 +22,7 @@ def main():
     middleware = Middleware('rabbitmq')
     rasentiment = ReduceAggSentiment(config_params["queue_to_read"], config_params["queues_to_write"], middleware)
     rasentiment.start()
+    middleware.close()
 
 def initialize_log():
     """

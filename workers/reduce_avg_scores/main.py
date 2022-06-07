@@ -22,6 +22,7 @@ def main():
     middleware = Middleware('rabbitmq')
     ravgscores = ReduceAvgScores(config_params["queue_to_read"], config_params["queues_to_write"], middleware)
     ravgscores.start()
+    middleware.close()
 
 def initialize_log():
     """

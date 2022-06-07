@@ -22,6 +22,7 @@ def main():
     middleware = Middleware('rabbitmq')
     mrcolumns5 = MapRemoveColumns5(config_params["queue_to_read"], config_params["queues_to_write"], middleware)
     mrcolumns5.start()
+    middleware.close()
 
 def initialize_log():
     """

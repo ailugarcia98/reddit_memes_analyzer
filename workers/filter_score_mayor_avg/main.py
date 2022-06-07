@@ -24,6 +24,7 @@ def main():
     filter = FilterScoreMayorAvg(config_params["queue_to_read_avg"], config_params["queue_to_read_filter"], \
                                  config_params["queues_to_write"], middleware)
     filter.start()
+    middleware.close()
 
 def initialize_log():
     """

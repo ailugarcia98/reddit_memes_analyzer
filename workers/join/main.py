@@ -24,6 +24,7 @@ def main():
     join = Join(config_params["queue_to_read_2"], config_params["queue_to_read_3"], \
                 config_params["queues_to_write"], middleware)
     join.start()
+    middleware.close()
 
 def initialize_log():
     """

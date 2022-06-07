@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import signal
 
 
 class Join:
@@ -13,6 +14,12 @@ class Join:
         self.stop_append_post = False
         self.stop_append_comments = False
         self.middleware = middleware
+        # graceful quit
+        # Define how to do when it will receive SIGTERM
+        signal.signal(signal.SIGTERM, self.__need_to_stop)
+
+    def __need_to_stop(self, *args):
+        self.middleware.shutdown()
 
     def start(self):
 
@@ -26,7 +33,6 @@ class Join:
         self.middleware.subscribe(self.queue_to_read_comments, self.callback_comments)
 
         self.middleware.wait_for_messages()
-        self.middleware.close()
 
     def contains_end(self, array):
         contains = False

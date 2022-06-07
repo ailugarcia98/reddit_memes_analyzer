@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import signal
 
 
 class Consumer:
@@ -7,6 +8,12 @@ class Consumer:
         self.queue_to_read = queue_to_read
         self.queues_to_write = queues_to_write
         self.middleware = middleware
+        # graceful quit
+        # Define how to do when it will receive SIGTERM
+        signal.signal(signal.SIGTERM, self.__need_to_stop)
+
+    def __need_to_stop(self, *args):
+        self.middleware.shutdown()
 
     def start(self):
 
@@ -19,8 +26,6 @@ class Consumer:
         self.middleware.subscribe(self.queue_to_read, self.callback)
 
         self.middleware.wait_for_messages()
-
-        self.middleware.close()
 
     def callback(self, ch, method, properties, body):
         for queue in self.queues_to_write:

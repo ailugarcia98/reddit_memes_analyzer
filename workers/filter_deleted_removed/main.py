@@ -22,6 +22,7 @@ def main():
     middleware = Middleware('rabbitmq')
     filter = FilterDeletedRemoved(config_params["queue_to_read"], config_params["queues_to_write"], middleware)
     filter.start()
+    middleware.close()
 
 def initialize_log():
     """

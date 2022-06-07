@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import signal
 
 
 class MapRemoveColumns4:
@@ -6,6 +7,12 @@ class MapRemoveColumns4:
         self.queue_to_read = queue_to_read
         self.queues_to_write = queues_to_write
         self.middleware = middleware
+        # graceful quit
+        # Define how to do when it will receive SIGTERM
+        signal.signal(signal.SIGTERM, self.__need_to_stop)
+
+    def __need_to_stop(self, *args):
+        self.middleware.shutdown()
 
     def start(self):
 

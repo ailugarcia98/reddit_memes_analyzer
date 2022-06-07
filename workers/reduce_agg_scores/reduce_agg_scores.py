@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import signal
 
 
 class ReduceAggScores:
@@ -8,6 +9,12 @@ class ReduceAggScores:
         self.count_posts = 0
         self.sum_score = 0
         self.middleware = middleware
+        # graceful quit
+        # Define how to do when it will receive SIGTERM
+        signal.signal(signal.SIGTERM, self.__need_to_stop)
+
+    def __need_to_stop(self, *args):
+        self.middleware.shutdown()
 
     def start(self):
 

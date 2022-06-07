@@ -17,14 +17,13 @@ class Producer:
         self.queue_response_avg = queue_response_avg
         self.queue_response_url = queue_response_url
         self.queue_response_meme = queue_response_meme
+        self.middleware = middleware
         # graceful quit
-        self._stop = False
         # Define how to do when it will receive SIGTERM
         signal.signal(signal.SIGTERM, self.__need_to_stop)
-        self.middleware = middleware
 
     def __need_to_stop(self, *args):
-        self._stop = True
+        self.middleware.shutdown()
 
     def start(self):
         self.send_posts()
@@ -62,8 +61,6 @@ class Producer:
             message = json.dumps({})
             self.middleware.publish(queue_name, message)
 
-            #self.middleware.close()
-
         except Exception as e:
             logging.error(e)
 
@@ -78,7 +75,6 @@ class Producer:
         self.middleware.subscribe(self.queue_response_meme, self.callback_meme)
 
         self.middleware.wait_for_messages()
-        self.middleware.close()
 
     def callback_avg(self, ch, method, properties, body):
         logging.info(f"[PRODUCER] Received avg {body.decode('utf-8')}")

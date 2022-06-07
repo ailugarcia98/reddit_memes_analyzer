@@ -48,6 +48,7 @@ def main():
                         config_params["queue_response_url"], config_params["queue_response_meme"], \
                         middleware)
     producer.start()
+    middleware.close()
 
 def initialize_log():
     """

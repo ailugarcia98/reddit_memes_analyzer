@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import signal
+
 
 class FindMaxSentAvg:
     def __init__(self, queue_to_read, queues_to_write, middleware):
@@ -8,6 +10,12 @@ class FindMaxSentAvg:
         self.max_avg = 0.0
         self.url_max_avg = ''
         self.middleware = middleware
+        # graceful quit
+        # Define how to do when it will receive SIGTERM
+        signal.signal(signal.SIGTERM, self.__need_to_stop)
+
+    def __need_to_stop(self, *args):
+        self.middleware.shutdown()
 
     def start(self):
 
