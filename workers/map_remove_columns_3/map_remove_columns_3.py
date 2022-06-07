@@ -11,6 +11,7 @@ class MapRemoveColumns3:
         # graceful quit
         # Define how to do when it will receive SIGTERM
         signal.signal(signal.SIGTERM, self.__need_to_stop)
+        signal.signal(signal.SIGINT, self.__need_to_stop)
 
     def __need_to_stop(self, *args):
         self.middleware.shutdown()
