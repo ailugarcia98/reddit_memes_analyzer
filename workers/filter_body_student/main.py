@@ -2,6 +2,7 @@
 import logging
 import os
 from filter_body_student import FilterBodyStudent
+from middleware.middleware import Middleware
 
 def initialize_config():
     config_params = {}
@@ -18,7 +19,8 @@ def initialize_config():
 def main():
     initialize_log()
     config_params = initialize_config()
-    filter = FilterBodyStudent(config_params["queue_to_read"], config_params["queues_to_write"])
+    middleware = Middleware('rabbitmq')
+    filter = FilterBodyStudent(config_params["queue_to_read"], config_params["queues_to_write"], middleware)
     filter.start()
 
 def initialize_log():

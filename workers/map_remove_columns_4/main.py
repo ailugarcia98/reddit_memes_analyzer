@@ -2,6 +2,7 @@
 import logging
 import os
 from map_remove_columns_4 import MapRemoveColumns4
+from middleware.middleware import Middleware
 
 def initialize_config():
     config_params = {}
@@ -18,7 +19,8 @@ def initialize_config():
 def main():
     initialize_log()
     config_params = initialize_config()
-    mrcolumns4 = MapRemoveColumns4(config_params["queue_to_read"], config_params["queues_to_write"])
+    middleware = Middleware('rabbitmq')
+    mrcolumns4 = MapRemoveColumns4(config_params["queue_to_read"], config_params["queues_to_write"], middleware)
     mrcolumns4.start()
 
 def initialize_log():

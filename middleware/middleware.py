@@ -1,5 +1,4 @@
 import pika
-import logging
 
 
 class Middleware:
@@ -7,7 +6,6 @@ class Middleware:
         # Create RabbitMQ communication channel
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(host=mom_host))
-
         self.channel = self.connection.channel()
 
     def declare(self, queue):

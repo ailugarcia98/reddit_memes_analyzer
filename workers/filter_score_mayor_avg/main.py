@@ -2,6 +2,7 @@
 import logging
 import os
 from filter_score_mayor_avg import FilterScoreMayorAvg
+from middleware.middleware import Middleware
 
 def initialize_config():
     config_params = {}
@@ -19,7 +20,9 @@ def initialize_config():
 def main():
     initialize_log()
     config_params = initialize_config()
-    filter = FilterScoreMayorAvg(config_params["queue_to_read_avg"], config_params["queue_to_read_filter"], config_params["queues_to_write"])
+    middleware = Middleware('rabbitmq')
+    filter = FilterScoreMayorAvg(config_params["queue_to_read_avg"], config_params["queue_to_read_filter"], \
+                                 config_params["queues_to_write"], middleware)
     filter.start()
 
 def initialize_log():

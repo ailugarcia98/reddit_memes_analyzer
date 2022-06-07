@@ -2,6 +2,7 @@
 import logging
 import os
 from join import Join
+from middleware.middleware import Middleware
 
 def initialize_config():
     config_params = {}
@@ -19,7 +20,9 @@ def initialize_config():
 def main():
     initialize_log()
     config_params = initialize_config()
-    join = Join(config_params["queue_to_read_2"], config_params["queue_to_read_3"], config_params["queues_to_write"])
+    middleware = Middleware('rabbitmq')
+    join = Join(config_params["queue_to_read_2"], config_params["queue_to_read_3"], \
+                config_params["queues_to_write"], middleware)
     join.start()
 
 def initialize_log():

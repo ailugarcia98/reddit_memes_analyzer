@@ -1,30 +1,22 @@
 #!/usr/bin/env python3
-import pika
-import time
-import os
 import logging
-import json
 
 
 class ReduceAvgScores:
-    def __init__(self, queue_to_read, queues_to_write):
+    def __init__(self, queue_to_read, queues_to_write, middleware):
         self.queue_to_read = queue_to_read
         self.queues_to_write = queues_to_write
         self.avg_score = 0
+        self.middleware = middleware
 
     def start(self):
 
-        connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host='rabbitmq'))
-        channel = connection.channel()
-
-        channel.queue_declare(queue=self.queue_to_read, durable=True)
+        self.middleware.declare(self.queue_to_read)
         for queue in self.queues_to_write:
-            channel.queue_declare(queue=queue, durable=True)
+            self.middleware.declare(queue)
 
-        channel.basic_qos(prefetch_count=1)
-        channel.basic_consume(queue=self.queue_to_read, on_message_callback=self.callback, auto_ack=True)
-        channel.start_consuming()
+        self.middleware.subscribe(self.queue_to_read, self.callback)
+        self.middleware.wait_for_messages()
 
     def callback(self, ch, method, properties, body):
         post = body.decode('utf-8')
@@ -33,13 +25,7 @@ class ReduceAvgScores:
             avg = int(new_body[0])/int(new_body[1])
             avg_encode = str(avg).encode('utf-8')
             for queue in self.queues_to_write:
-                ch.basic_publish(
-                    exchange='',
-                    routing_key=queue,
-                    body=avg_encode,
-                    properties=pika.BasicProperties(
-                        delivery_mode=2,  # make message persistent
-                    ))
+                self.middleware.publish(queue, avg_encode)
         else:
             logging.error("Div 0 error")
 

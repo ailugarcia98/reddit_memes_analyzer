@@ -2,6 +2,7 @@
 import logging
 import os
 from filter_deleted_removed import FilterDeletedRemoved
+from middleware.middleware import Middleware
 
 def initialize_config():
     config_params = {}
@@ -18,7 +19,8 @@ def initialize_config():
 def main():
     initialize_log()
     config_params = initialize_config()
-    filter = FilterDeletedRemoved(config_params["queue_to_read"], config_params["queues_to_write"])
+    middleware = Middleware('rabbitmq')
+    filter = FilterDeletedRemoved(config_params["queue_to_read"], config_params["queues_to_write"], middleware)
     filter.start()
 
 def initialize_log():

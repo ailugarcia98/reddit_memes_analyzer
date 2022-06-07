@@ -21,6 +21,7 @@ services:
     volumes:
       - ./producer/csvs/:/csvs/
       - ./producer/meme/:/meme/
+      - ./middleware/:/middleware/
 
   consumer_post:
     build:
@@ -36,6 +37,8 @@ services:
       - CONSUMER_ID=1
       - QUEUE_TO_READ=post_queue
       - QUEUES_TO_WRITE=queue_map_remove_columns|queue_map_remove_columns_3
+    volumes:
+      - ./middleware/:/middleware/
 
   consumer_comment:
     build:
@@ -51,6 +54,8 @@ services:
       - CONSUMER_ID=2
       - QUEUE_TO_READ=comments_queue
       - QUEUES_TO_WRITE=queue_filter_deleted_removed
+    volumes:
+      - ./middleware/:/middleware/
 
   map_remove_columns:
     build:
@@ -65,6 +70,8 @@ services:
       - PYTHONUNBUFFERED=1
       - QUEUE_TO_READ=queue_map_remove_columns
       - QUEUES_TO_WRITE=queue_reduce_agg_scores
+    volumes:
+      - ./middleware/:/middleware/
 
   reduce_agg_scores:
     build:
@@ -79,6 +86,8 @@ services:
       - PYTHONUNBUFFERED=1
       - QUEUE_TO_READ=queue_reduce_agg_scores
       - QUEUES_TO_WRITE=queue_reduce_avg_score
+    volumes:
+      - ./middleware/:/middleware/
 
   reduce_avg_scores:
     build:
@@ -93,6 +102,8 @@ services:
       - PYTHONUNBUFFERED=1
       - QUEUE_TO_READ=queue_reduce_avg_score
       - QUEUES_TO_WRITE=queue_response|queue_response_url
+    volumes:
+      - ./middleware/:/middleware/
 
   filter_deleted_removed:
     build:
@@ -107,6 +118,8 @@ services:
       - PYTHONUNBUFFERED=1
       - QUEUE_TO_READ=queue_filter_deleted_removed
       - QUEUES_TO_WRITE=queue_map_remove_columns_2
+    volumes:
+      - ./middleware/:/middleware/
 
   map_remove_columns_2:
     build:
@@ -121,6 +134,8 @@ services:
       - PYTHONUNBUFFERED=1
       - QUEUE_TO_READ=queue_map_remove_columns_2
       - QUEUES_TO_WRITE=queue_join
+    volumes:
+      - ./middleware/:/middleware/
 
   map_remove_columns_3:
     build:
@@ -135,6 +150,8 @@ services:
       - PYTHONUNBUFFERED=1
       - QUEUE_TO_READ=queue_map_remove_columns_3
       - QUEUES_TO_WRITE=queue_join_2
+    volumes:
+      - ./middleware/:/middleware/
 
   join:
     build:
@@ -150,6 +167,8 @@ services:
       - QUEUE_TO_READ_2=queue_join
       - QUEUE_TO_READ_3=queue_join_2
       - QUEUES_TO_WRITE=queue_filter_body_student|queue_map_remove_columns_4
+    volumes:
+      - ./middleware/:/middleware/
 
   filter_body_student:
     build:
@@ -164,6 +183,8 @@ services:
       - PYTHONUNBUFFERED=1
       - QUEUE_TO_READ=queue_filter_body_student
       - QUEUES_TO_WRITE=queue_filter_score_mayor_avg
+    volumes:
+      - ./middleware/:/middleware/
 
   filter_score_mayor_avg:
     build:
@@ -179,6 +200,8 @@ services:
       - QUEUE_TO_READ_AVG=queue_response_url
       - QUEUE_TO_READ_FILTER=queue_filter_score_mayor_avg
       - QUEUES_TO_WRITE=queue_response_2
+    volumes:
+      - ./middleware/:/middleware/
 
   map_remove_columns_4:
     build:
@@ -193,6 +216,8 @@ services:
       - PYTHONUNBUFFERED=1
       - QUEUE_TO_READ=queue_map_remove_columns_4
       - QUEUES_TO_WRITE=queue_reduce_agg_sentiment
+    volumes:
+      - ./middleware/:/middleware/
 
   reduce_agg_sentiment:
     build:
@@ -207,6 +232,8 @@ services:
       - PYTHONUNBUFFERED=1
       - QUEUE_TO_READ=queue_reduce_agg_sentiment
       - QUEUES_TO_WRITE=queue_reduce_post_id
+    volumes:
+      - ./middleware/:/middleware/
 
   reduce_post_id:
     build:
@@ -221,6 +248,8 @@ services:
       - PYTHONUNBUFFERED=1
       - QUEUE_TO_READ=queue_reduce_post_id
       - QUEUES_TO_WRITE=queue_find_max_sent_avg
+    volumes:
+      - ./middleware/:/middleware/
 
   find_max_sent_avg:
     build:
@@ -235,6 +264,8 @@ services:
       - PYTHONUNBUFFERED=1
       - QUEUE_TO_READ=queue_find_max_sent_avg
       - QUEUES_TO_WRITE=queue_map_remove_columns_5
+    volumes:
+      - ./middleware/:/middleware/
 
   map_remove_columns_5:
     build:
@@ -249,6 +280,8 @@ services:
       - PYTHONUNBUFFERED=1
       - QUEUE_TO_READ=queue_map_remove_columns_5
       - QUEUES_TO_WRITE=queue_download_meme
+    volumes:
+      - ./middleware/:/middleware/
 
   download_meme:
     build:
@@ -263,3 +296,5 @@ services:
       - PYTHONUNBUFFERED=1
       - QUEUE_TO_READ=queue_download_meme
       - QUEUES_TO_WRITE=queue_response_3
+    volumes:
+      - ./middleware/:/middleware/

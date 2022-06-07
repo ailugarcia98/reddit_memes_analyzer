@@ -1,13 +1,8 @@
 #!/usr/bin/env python3
-import pika
-import time
-import os
-import logging
-import json
 
 
 class Join:
-    def __init__(self, queue_to_read_2, queue_to_read_3, queues_to_write):
+    def __init__(self, queue_to_read_2, queue_to_read_3, queues_to_write, middleware):
         self.queue_to_read_comments = queue_to_read_2
         self.queue_to_read_posts = queue_to_read_3
         self.queues_to_write = queues_to_write
@@ -17,26 +12,21 @@ class Join:
         self.end = False
         self.stop_append_post = False
         self.stop_append_comments = False
+        self.middleware = middleware
 
     def start(self):
 
-        connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host='rabbitmq'))
-        channel = connection.channel()
-
         for queue in self.queues_to_write:
-            channel.queue_declare(queue=queue, durable=True)
+            self.middleware.declare(queue)
 
-        channel.queue_declare(queue=self.queue_to_read_posts, durable=True)
-        channel.basic_qos(prefetch_count=1)
-        channel.basic_consume(queue=self.queue_to_read_posts, on_message_callback=self.callback_post, auto_ack=True)
+        self.middleware.declare(self.queue_to_read_posts)
+        self.middleware.subscribe(self.queue_to_read_posts, self.callback_post)
 
-        channel.queue_declare(queue=self.queue_to_read_comments, durable=True)
-        channel.basic_qos(prefetch_count=1)
-        channel.basic_consume(queue=self.queue_to_read_comments, on_message_callback=self.callback_comments, auto_ack=True)
-        channel.start_consuming()
+        self.middleware.declare(self.queue_to_read_comments)
+        self.middleware.subscribe(self.queue_to_read_comments, self.callback_comments)
 
-        connection.close()
+        self.middleware.wait_for_messages()
+        self.middleware.close()
 
     def contains_end(self, array):
         contains = False
@@ -52,16 +42,6 @@ class Join:
                 self.stop_append_post = True
             self.posts.append(real_body)
 
-    # def send_end(self, ch):
-    #     queue = "queue_map_remove_columns_4"
-    #     ch.basic_publish(
-    #         exchange='',
-    #         routing_key=queue,
-    #         body=str({}).encode('utf-8'),
-    #         properties=pika.BasicProperties(
-    #             delivery_mode=2,  # make message persistent
-    #         ))
-
     def callback_comments(self, ch, method, properties, body):
         real_body = body.decode('utf-8')
         if not self.stop_append_comments:
@@ -76,13 +56,7 @@ class Join:
                     self.end = True
                     self.new_body.append(str({}))
                     for queue in self.queues_to_write:
-                        ch.basic_publish(
-                            exchange='',
-                            routing_key=queue,
-                            body=str(self.new_body).encode('utf-8'),
-                            properties=pika.BasicProperties(
-                                delivery_mode=2,  # make message persistent
-                            ))
+                        self.middleware.publish(queue, str(self.new_body).encode('utf-8'))
                     return 0
                 else:
                     comment_post_id = comment.split(',')[0]
