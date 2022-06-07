@@ -1,23 +1,30 @@
 #!/usr/bin/env python3
-import pika
 import logging
-import time
 import csv
 import json
+import signal
 
 
 class Producer:
     def __init__(self, post_queue_name, post_file, comments_queue_name, \
                  comments_file, size_send, queue_response_avg, queue_response_url, \
-                 queue_response_meme):
+                 queue_response_meme, middleware):
         self.post_queue_name = post_queue_name
         self.comments_queue_name = comments_queue_name
         self.post_file = post_file
         self.comments_file = comments_file
-        self.size_send = size_send #how many records Producer can send at the same time
+        self.size_send = size_send  # how many records Producer can send at the same time
         self.queue_response_avg = queue_response_avg
         self.queue_response_url = queue_response_url
         self.queue_response_meme = queue_response_meme
+        # graceful quit
+        self._stop = False
+        # Define how to do when it will receive SIGTERM
+        signal.signal(signal.SIGTERM, self.__need_to_stop)
+        self.middleware = middleware
+
+    def __need_to_stop(self, *args):
+        self._stop = True
 
     def start(self):
         self.send_posts()
@@ -31,12 +38,7 @@ class Producer:
         self.send(self.comments_file, self.comments_queue_name)
 
     def send(self, file, queue_name):
-        # Create RabbitMQ communication channel
-        connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host='rabbitmq'))
-        channel = connection.channel()
-
-        channel.queue_declare(queue=queue_name, durable=True)
+        self.middleware.declare(queue_name)
 
         try:
             with open(file, mode='r') as csvfile:
@@ -48,60 +50,35 @@ class Producer:
                     lines += 1
                     if lines == self.size_send:
                         message = json.dumps(rows)
-                        channel.basic_publish(
-                            exchange='',
-                            routing_key=queue_name,
-                            body=message,
-                            properties=pika.BasicProperties(
-                                delivery_mode=2,  # make message persistent
-                            ))
+                        self.middleware.publish(queue_name, message)
                         rows = []
                         lines = 0
 
             if len(rows) != 0:
                 message = json.dumps(rows)
-                channel.basic_publish(
-                    exchange='',
-                    routing_key=queue_name,
-                    body=message,
-                    properties=pika.BasicProperties(
-                        delivery_mode=2,  # make message persistent
-                    ))
+                self.middleware.publish(queue_name, message)
 
-            #Send "end char"
+            # Send "end char"
             message = json.dumps({})
-            channel.basic_publish(
-                exchange='',
-                routing_key=queue_name,
-                body=message,
-                properties=pika.BasicProperties(
-                    delivery_mode=2,  # make message persistent
-                ))
-            connection.close()
+            self.middleware.publish(queue_name, message)
+
+            #self.middleware.close()
 
         except Exception as e:
             logging.error(e)
 
     def recv(self):
-        connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host='rabbitmq'))
-        channel = connection.channel()
+        self.middleware.declare(self.queue_response_avg)
+        self.middleware.subscribe(self.queue_response_avg, self.callback_avg)
 
-        channel.queue_declare(queue=self.queue_response_avg, durable=True)
-        channel.basic_qos(prefetch_count=1)
-        channel.basic_consume(queue=self.queue_response_avg, on_message_callback=self.callback_avg, auto_ack=True)
+        self.middleware.declare(self.queue_response_url)
+        self.middleware.subscribe(self.queue_response_url, self.callback_url)
 
-        channel.queue_declare(queue=self.queue_response_url, durable=True)
-        channel.basic_qos(prefetch_count=1)
-        channel.basic_consume(queue=self.queue_response_url, on_message_callback=self.callback_url, auto_ack=True)
+        self.middleware.declare(self.queue_response_meme)
+        self.middleware.subscribe(self.queue_response_meme, self.callback_meme)
 
-        channel.queue_declare(queue=self.queue_response_meme, durable=True)
-        channel.basic_qos(prefetch_count=1)
-        channel.basic_consume(queue=self.queue_response_meme, on_message_callback=self.callback_meme, auto_ack=True)
-
-        channel.start_consuming()
-
-        connection.close()
+        self.middleware.wait_for_messages()
+        self.middleware.close()
 
     def callback_avg(self, ch, method, properties, body):
         logging.info(f"[PRODUCER] Received avg {body.decode('utf-8')}")
@@ -113,3 +90,4 @@ class Producer:
         meme_file = body
         open("/meme/meme_downloaded.jpg", "wb").write(meme_file)
         logging.info(f"[PRODUCER] Received meme")
+

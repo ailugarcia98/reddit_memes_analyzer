@@ -6,4 +6,5 @@ RUN pip3 install pika
 COPY producer.py /
 COPY main.py /
 COPY config.ini /
+COPY middleware middleware/
 CMD ["python3", "./main.py"]

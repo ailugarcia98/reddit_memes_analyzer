@@ -3,6 +3,7 @@ import logging
 import os
 from configparser import ConfigParser
 from producer import Producer
+from middleware.middleware import Middleware
 
 def initialize_config():
     """ Parse env variables or config file to find program config params
@@ -39,10 +40,13 @@ def main():
 
     config_params = initialize_config()
 
+    middleware = Middleware('rabbitmq')
+
     producer = Producer(config_params["post_queue_name"], config_params["post_file"], \
                         config_params["comments_queue_name"], config_params["comments_file"], \
                         config_params["size_send"], config_params["queue_response_avg"], \
-                        config_params["queue_response_url"], config_params["queue_response_meme"])
+                        config_params["queue_response_url"], config_params["queue_response_meme"], \
+                        middleware)
     producer.start()
 
 def initialize_log():
