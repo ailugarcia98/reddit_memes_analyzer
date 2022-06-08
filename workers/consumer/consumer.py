@@ -21,7 +21,6 @@ class Consumer:
         self.middleware.declare(self.queue_to_read)
 
         for queue in self.queues_to_write:
-            # channel.queue_declare(queue=queue, durable=True)
             self.middleware.declare(queue)
 
         self.middleware.subscribe(self.queue_to_read, self.callback)

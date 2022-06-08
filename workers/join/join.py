@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import signal
+import logging
 
 
 class Join:
@@ -66,8 +67,8 @@ class Join:
                         self.middleware.publish(queue, str(self.new_body).encode('utf-8'))
                     return 0
                 else:
-                    comment_post_id = comment.split(',')[0]
+                    comment_post_id = comment.split('$$,$$')[0]
                     if post_id == comment_post_id:
                         post_url = post.split(',')[1]
-                        if f'{comment},{post_url}' not in self.new_body:   # drop duplicates
-                            self.new_body.append(f'{comment},{post_url}')
+                        if f'{comment}$$,$${post_url}' not in self.new_body:   # drop duplicates
+                            self.new_body.append(f'{comment}$$,$${post_url}')

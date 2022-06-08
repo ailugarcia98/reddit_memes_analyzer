@@ -35,11 +35,11 @@ class ReduceAggSentiment:
             self.new_body(comment)
 
     def new_body(self, comment):
-        maybe_sentiment = comment.split(',')[1]
+        maybe_sentiment = comment.split('$$,$$')[1]
         if maybe_sentiment != str(''):
-            sentiment = float(comment.split(',')[1])
-            post_id = comment.split(',')[0]
-            url = comment.split(',')[2]
+            sentiment = float(comment.split('$$,$$')[1])
+            post_id = comment.split('$$,$$')[0]
+            url = comment.split('$$,$$')[2]
             self.dict_sentiment.append((post_id,  url, sentiment, int(1)))
 
     def agg(self):

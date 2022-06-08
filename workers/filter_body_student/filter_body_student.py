@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import signal
+import logging
 
 
 class FilterBodyStudent:
@@ -33,12 +34,15 @@ class FilterBodyStudent:
                 if comments_students != str(""):
                     for queue in self.queues_to_write:
                         self.middleware.publish(queue, comments_students)
+            else:
+                for queue in self.queues_to_write:
+                    self.middleware.publish(queue, str({}).encode('utf-8'))
 
     def new_body(self, comment):
-        comment_body = str(comment.split(',')[1])
+        comment_body = str(comment.split('$$,$$')[1])
         if comment_body.__contains__("university") or comment_body.__contains__("college") or comment_body.__contains__("student") \
                 or comment_body.__contains__("teacher") or comment_body.__contains__("professor"):
-            new_comment = f"{comment.split(',')[0]},{comment.split(',')[2]},{comment.split(',')[4]}"
+            new_comment = f"{comment.split('$$,$$')[0]}$$,$${comment.split('$$,$$')[2]}$$,$${comment.split('$$,$$')[4]}"
         else:
             new_comment = ""
         return str(new_comment)

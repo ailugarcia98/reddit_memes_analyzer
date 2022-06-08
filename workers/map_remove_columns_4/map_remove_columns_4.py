@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import signal
+import logging
 
 
 class MapRemoveColumns4:
@@ -41,9 +42,9 @@ class MapRemoveColumns4:
                         self.middleware.publish(queue, str({}))
 
     def new_body(self, body):
-        post_id = str(body.split(',')[0])
-        sentiment = str(body.split(',')[3])
-        url = str(body.split(',')[4])
-        return f"{post_id},{sentiment},{url}"
+        post_id = str(body.split('$$,$$')[0])
+        sentiment = str(body.split('$$,$$')[3])
+        url = str(body.split('$$,$$')[4])
+        return f"{post_id}$$,$${sentiment}$$,$${url}"
 
 
