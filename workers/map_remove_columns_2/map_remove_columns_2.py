@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 import signal
+import sys
 
 
 class MapRemoveColumns2:
@@ -15,6 +16,7 @@ class MapRemoveColumns2:
 
     def __need_to_stop(self, *args):
         self.middleware.shutdown()
+        sys.exit(0)
 
     def start(self):
 
@@ -31,6 +33,7 @@ class MapRemoveColumns2:
             new_body = json.dumps({})
             for queue in self.queues_to_write:
                 self.middleware.publish(queue, new_body)
+            self.middleware.shutdown()
         else:
             for comment in comments:
                 new_body = self.new_body(comment)

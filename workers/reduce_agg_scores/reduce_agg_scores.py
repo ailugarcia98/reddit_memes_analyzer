@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import signal
+import sys
 
 
 class ReduceAggScores:
@@ -16,6 +17,7 @@ class ReduceAggScores:
 
     def __need_to_stop(self, *args):
         self.middleware.shutdown()
+        sys.exit(0)
 
     def start(self):
 
@@ -32,6 +34,7 @@ class ReduceAggScores:
             new_body = self.new_body()
             for queue in self.queues_to_write:
                 self.middleware.publish(queue, new_body)
+            self.middleware.shutdown()
         else:
             self.count_posts += 1
             self.sum_score += int(post.split(',')[1])

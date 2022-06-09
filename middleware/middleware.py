@@ -1,4 +1,5 @@
 import pika
+import sys
 
 
 class Middleware:

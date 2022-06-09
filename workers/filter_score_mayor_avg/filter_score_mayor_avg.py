@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import signal
-import logging
+import sys
 
 
 class FilterScoreMayorAvg:
@@ -18,6 +18,7 @@ class FilterScoreMayorAvg:
 
     def __need_to_stop(self, *args):
         self.middleware.shutdown()
+        sys.exit(0)
 
     def start(self):
 
@@ -40,10 +41,13 @@ class FilterScoreMayorAvg:
                 self.urls.append(url)
                 for queue in self.queues_to_write:
                     self.middleware.publish(queue, str(self.urls).encode('utf-8'))
+        else:
+            for queue in self.queues_to_write:
+                self.middleware.publish(queue, str({}).encode('utf-8'))
+            self.middleware.shutdown()
 
     def callback_avg(self, ch, method, properties, body):
         self.avg = float(eval(body.decode('utf-8')))
-        logging.info(f"RECV AVG {self.avg}")
 
 
 

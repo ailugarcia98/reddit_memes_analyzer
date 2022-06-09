@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import signal
+import sys
 
 
 class ReduceAggSentiment:
@@ -15,6 +16,7 @@ class ReduceAggSentiment:
 
     def __need_to_stop(self, *args):
         self.middleware.shutdown()
+        sys.exit(0)
 
     def start(self):
 
@@ -31,6 +33,7 @@ class ReduceAggSentiment:
             new_body = str(self.agg()).encode('utf-8')
             for queue in self.queues_to_write:
                 self.middleware.publish(queue, new_body)
+            self.middleware.shutdown()
         else:
             self.new_body(comment)
 

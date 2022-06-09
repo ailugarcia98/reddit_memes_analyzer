@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import signal
+import sys
 
 
 class FindMaxSentAvg:
@@ -17,6 +18,7 @@ class FindMaxSentAvg:
 
     def __need_to_stop(self, *args):
         self.middleware.shutdown()
+        sys.exit(0)
 
     def start(self):
 
@@ -30,9 +32,14 @@ class FindMaxSentAvg:
 
     def callback(self, ch, method, properties, body):
         comments = eval(body.decode('utf-8'))
-        new_body = str(self.new_body(comments)).encode('utf-8')
-        for queue in self.queues_to_write:
-            self.middleware.publish(queue, new_body)
+        if str(body.decode('utf-8')) != str({}):
+            new_body = str(self.new_body(comments)).encode('utf-8')
+            for queue in self.queues_to_write:
+                self.middleware.publish(queue, new_body)
+        else:
+            for queue in self.queues_to_write:
+                self.middleware.publish(queue, str({}).encode('utf-8'))
+            self.middleware.shutdown()
 
     def new_body(self, comments):
         for comment in comments:

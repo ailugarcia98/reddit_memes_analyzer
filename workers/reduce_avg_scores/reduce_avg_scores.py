@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import logging
 import signal
+import sys
 
 
 class ReduceAvgScores:
@@ -16,6 +17,7 @@ class ReduceAvgScores:
 
     def __need_to_stop(self, *args):
         self.middleware.shutdown()
+        sys.exit(0)
 
     def start(self):
 
@@ -28,14 +30,19 @@ class ReduceAvgScores:
 
     def callback(self, ch, method, properties, body):
         post = body.decode('utf-8')
-        new_body = post.split(',')
-        if int(new_body[1]) != 0:
-            avg = int(new_body[0])/int(new_body[1])
-            avg_encode = str(avg).encode('utf-8')
-            for queue in self.queues_to_write:
-                self.middleware.publish(queue, avg_encode)
+        if str(post) != str({}):
+            new_body = post.split(',')
+            if int(new_body[1]) != 0:
+                avg = int(new_body[0])/int(new_body[1])
+                avg_encode = str(avg).encode('utf-8')
+                for queue in self.queues_to_write:
+                    self.middleware.publish(queue, avg_encode)
+            else:
+                logging.error("Div 0 error")
         else:
-            logging.error("Div 0 error")
+            for queue in self.queues_to_write:
+                self.middleware.publish(queue, str({}).encode('utf-8'))
+            self.middleware.shutdown()
 
 
 

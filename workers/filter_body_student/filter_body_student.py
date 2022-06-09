@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import signal
-import logging
+import sys
 
 
 class FilterBodyStudent:
@@ -15,6 +15,7 @@ class FilterBodyStudent:
 
     def __need_to_stop(self, *args):
         self.middleware.shutdown()
+        sys.exit(0)
 
     def start(self):
 
@@ -37,6 +38,7 @@ class FilterBodyStudent:
             else:
                 for queue in self.queues_to_write:
                     self.middleware.publish(queue, str({}).encode('utf-8'))
+                self.middleware.shutdown()
 
     def new_body(self, comment):
         comment_body = str(comment.split('$$,$$')[1])

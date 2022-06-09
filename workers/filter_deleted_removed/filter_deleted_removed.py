@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 import signal
+import sys
 
 
 class FilterDeletedRemoved:
@@ -15,6 +16,7 @@ class FilterDeletedRemoved:
 
     def __need_to_stop(self, *args):
         self.middleware.shutdown()
+        sys.exit(0)
 
     def start(self):
 
@@ -31,6 +33,7 @@ class FilterDeletedRemoved:
             new_body = json.dumps({})
             for queue in self.queues_to_write:
                 self.middleware.publish(queue, new_body)
+            self.middleware.shutdown()
         else:
             for comment in comments:
                 comments_not_deleted_removed = self.new_body(comment)

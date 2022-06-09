@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 import signal
+import sys
 
 
 class Consumer:
@@ -15,6 +16,7 @@ class Consumer:
 
     def __need_to_stop(self, *args):
         self.middleware.shutdown()
+        sys.exit(0)
 
     def start(self):
 
@@ -29,6 +31,9 @@ class Consumer:
 
     def callback(self, ch, method, properties, body):
         for queue in self.queues_to_write:
-            if json.loads(body) == json.dumps({}):
+            if str(body) == str({}):
                 body = json.dumps({})
-            self.middleware.publish(queue, body)
+                self.middleware.publish(queue, body)
+                self.middleware.shutdown()
+            else:
+                self.middleware.publish(queue, body)

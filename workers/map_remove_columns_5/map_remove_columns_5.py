@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import signal
+import sys
 
 
 class MapRemoveColumns5:
@@ -14,6 +15,7 @@ class MapRemoveColumns5:
 
     def __need_to_stop(self, *args):
         self.middleware.shutdown()
+        sys.exit(0)
 
     def start(self):
 
@@ -26,9 +28,14 @@ class MapRemoveColumns5:
 
     def callback(self, ch, method, properties, body):
         body_recv = eval(body.decode('utf-8'))
-        url = self.new_body(body_recv).encode('utf-8')
-        for queue in self.queues_to_write:
-            self.middleware.publish(queue, url)
+        if str(body.decode('utf-8')) != str({}):
+            url = self.new_body(body_recv).encode('utf-8')
+            for queue in self.queues_to_write:
+                self.middleware.publish(queue, url)
+        else:
+            for queue in self.queues_to_write:
+                self.middleware.publish(queue, str({}).encode('utf-8'))
+            self.middleware.shutdown()
 
     def new_body(self, body):
         url = body[0]

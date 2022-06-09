@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import signal
-import logging
+import sys
 
 
 class MapRemoveColumns4:
@@ -15,6 +15,7 @@ class MapRemoveColumns4:
 
     def __need_to_stop(self, *args):
         self.middleware.shutdown()
+        sys.exit(0)
 
     def start(self):
 
@@ -40,6 +41,7 @@ class MapRemoveColumns4:
                 if comment == str({}):
                     for queue in self.queues_to_write:
                         self.middleware.publish(queue, str({}))
+                self.middleware.shutdown()
 
     def new_body(self, body):
         post_id = str(body.split('$$,$$')[0])

@@ -3,6 +3,7 @@ import logging
 import csv
 import json
 import signal
+import sys
 
 
 class Producer:
@@ -25,6 +26,7 @@ class Producer:
 
     def __need_to_stop(self, *args):
         self.middleware.shutdown()
+        sys.exit(0)
 
     def start(self):
         self.send_posts()
@@ -78,13 +80,15 @@ class Producer:
         self.middleware.wait_for_messages()
 
     def callback_avg(self, ch, method, properties, body):
-        logging.info(f"[PRODUCER] Received avg {body.decode('utf-8')}")
+        if str(body.decode('utf-8')) != str({}):
+            logging.info(f"#### [PRODUCER] Received avg {body.decode('utf-8')} ####")
 
     def callback_url(self, ch, method, properties, body):
-        logging.info(f"[PRODUCER] Received url {body.decode('utf-8')}")
+        if str(body.decode('utf-8')) != str({}):
+            logging.info(f"#### [PRODUCER] Received url {body.decode('utf-8')} ####")
 
     def callback_meme(self, ch, method, properties, body):
         meme_file = body
         open("/meme/meme_downloaded.jpg", "wb").write(meme_file)
-        logging.info(f"[PRODUCER] Received meme")
+        logging.info("#### [PRODUCER] Received meme ####")
 

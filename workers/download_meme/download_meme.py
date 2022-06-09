@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import requests
 import signal
+import sys
 
 
 class DownloadMeme:
@@ -15,6 +16,7 @@ class DownloadMeme:
 
     def __need_to_stop(self, *args):
         self.middleware.shutdown()
+        sys.exit(0)
 
     def start(self):
 
@@ -32,6 +34,7 @@ class DownloadMeme:
         if meme_downloaded is not None:
             for queue in self.queues_to_write:
                 self.middleware.publish(queue, meme_downloaded)
+        self.middleware.shutdown()
 
     def download_meme(self, url):
         response = requests.get(url)
