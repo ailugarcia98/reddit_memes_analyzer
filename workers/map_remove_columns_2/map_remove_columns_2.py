@@ -2,6 +2,7 @@
 import json
 import signal
 import sys
+import logging
 
 
 class MapRemoveColumns2:
@@ -28,17 +29,23 @@ class MapRemoveColumns2:
         self.middleware.wait_for_messages()
 
     def callback(self, ch, method, properties, body):
-        comments = [json.loads(body)]
-        if comments == [{}]:
+        comments = json.loads(body)
+        if comments == {}:
             new_body = json.dumps({})
             for queue in self.queues_to_write:
                 self.middleware.publish(queue, new_body)
+            logging.info(f"[MRC2] END")
+            self.middleware.ack(method)
             self.middleware.shutdown()
         else:
+            send_array = []
             for comment in comments:
-                new_body = self.new_body(comment)
+                new_body = self.new_body(json.loads(comment))
+                send_array.append(new_body)
+            if len(send_array) > 0:
                 for queue in self.queues_to_write:
-                    self.middleware.publish(queue, new_body)
+                    self.middleware.publish(queue, json.dumps(send_array))
+            self.middleware.ack(method)
 
     def new_body(self, body):
         post_id = body["permalink"].split('/')[6]

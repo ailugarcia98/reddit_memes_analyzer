@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import json
+import logging
 import signal
 import sys
 
@@ -28,17 +30,20 @@ class FilterBodyStudent:
         self.middleware.wait_for_messages()
 
     def callback(self, ch, method, properties, body):
-        comments = eval(body)
+        comments = json.loads(body.decode('utf-8'))
+        send_array = []
         for comment in comments:
             if comment != str({}):
                 comments_students = self.new_body(comment)
                 if comments_students != str(""):
-                    for queue in self.queues_to_write:
-                        self.middleware.publish(queue, comments_students)
+                    send_array.append(comments_students)
             else:
-                for queue in self.queues_to_write:
-                    self.middleware.publish(queue, str({}).encode('utf-8'))
-                self.middleware.shutdown()
+                send_array.append(str({}))
+        if len(send_array) > 0:
+            for queue in self.queues_to_write:
+                self.middleware.publish(queue, json.dumps(send_array))
+            logging.info(f"[FILTER BODY STUDENT] END")
+        self.middleware.ack(method)
 
     def new_body(self, comment):
         comment_body = str(comment.split('$$,$$')[1])

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import json
+import logging
 import signal
 import sys
 
@@ -28,14 +30,16 @@ class ReduceAggSentiment:
         self.middleware.wait_for_messages()
 
     def callback(self, ch, method, properties, body):
-        comment = body.decode('utf-8')
-        if comment == str({}):
-            new_body = str(self.agg()).encode('utf-8')
-            for queue in self.queues_to_write:
-                self.middleware.publish(queue, new_body)
-            self.middleware.shutdown()
-        else:
-            self.new_body(comment)
+        comments = json.loads(body.decode('utf-8'))
+        for comment in comments:
+            if comment != str({}):
+                self.new_body(comment)
+            else:
+                new_body = self.agg()
+                for queue in self.queues_to_write:
+                    self.middleware.publish(queue, json.dumps(new_body))
+                logging.info(f"[REDUCE AGG SENTIMENT] END")
+        self.middleware.ack(method)
 
     def new_body(self, comment):
         maybe_sentiment = comment.split('$$,$$')[1]

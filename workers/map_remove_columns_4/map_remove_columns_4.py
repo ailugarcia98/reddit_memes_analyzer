@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import json
+import logging
 import signal
 import sys
 
@@ -27,21 +29,29 @@ class MapRemoveColumns4:
         self.middleware.wait_for_messages()
 
     def sentiment_not_null(self, comment):
-        sentiment = str(comment.split(',')[3])
+        sentiment = str(comment.split('$$,$$')[3])
         return sentiment != str('')
 
+    def url_not_null(self, comment):
+        url = str(comment.split('$$,$$')[4])
+        return url != str('')
+
     def callback(self, ch, method, properties, body):
-        comments = eval(body.decode('utf-8'))
+        comments = json.loads(body.decode('utf-8'))
+        send_array = []
         for comment in comments:
-            if comment != str({}) and self.sentiment_not_null(comment):
-                new_body = self.new_body(comment).encode('utf-8')
-                for queue in self.queues_to_write:
-                    self.middleware.publish(queue, new_body)
+            if comment != str({}) and self.sentiment_not_null(comment) and \
+                    self.url_not_null(comment):
+                new_body = self.new_body(comment)
+                send_array.append(new_body)
             else:
                 if comment == str({}):
-                    for queue in self.queues_to_write:
-                        self.middleware.publish(queue, str({}))
-                self.middleware.shutdown()
+                    send_array.append(str({}))
+        if len(send_array) > 0:
+            for queue in self.queues_to_write:
+                self.middleware.publish(queue, json.dumps(send_array))
+        logging.info(f"[MRC4] END")
+        self.middleware.ack(method)
 
     def new_body(self, body):
         post_id = str(body.split('$$,$$')[0])

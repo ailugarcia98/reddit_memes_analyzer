@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import json
+import logging
 import signal
 import sys
 
@@ -29,15 +31,20 @@ class ReduceAggScores:
         self.middleware.wait_for_messages()
 
     def callback(self, ch, method, properties, body):
-        post = body.decode('utf-8')
-        if post == '{}':
+        posts = body.decode('utf-8')
+        if posts == '{}':
             new_body = self.new_body()
             for queue in self.queues_to_write:
                 self.middleware.publish(queue, new_body)
+            logging.info(f"[REDUCE AGG SCORES] END")
+            self.middleware.ack(method)
             self.middleware.shutdown()
         else:
-            self.count_posts += 1
-            self.sum_score += int(post.split(',')[1])
+            posts_json = json.loads(body)
+            for post in posts_json:
+                self.count_posts += 1
+                self.sum_score += int(post.split(',')[1])
+            self.middleware.ack(method)
 
     def new_body(self):
         return f'{self.sum_score}, {self.count_posts}'

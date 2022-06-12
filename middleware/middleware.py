@@ -6,7 +6,7 @@ class Middleware:
     def __init__(self, mom_host):
         # Create RabbitMQ communication channel
         self.connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host=mom_host))
+            pika.ConnectionParameters(host=mom_host, heartbeat=3600))
         self.channel = self.connection.channel()
 
     def declare(self, queue):
@@ -23,7 +23,10 @@ class Middleware:
 
     def subscribe(self, queue, callback_function):
         self.channel.basic_qos(prefetch_count=1)
-        self.channel.basic_consume(queue=queue, on_message_callback=callback_function, auto_ack=True)
+        self.channel.basic_consume(queue=queue, on_message_callback=callback_function)
+
+    def ack(self, method):
+        self.channel.basic_ack(delivery_tag=method.delivery_tag)
 
     def wait_for_messages(self):
         self.channel.start_consuming()

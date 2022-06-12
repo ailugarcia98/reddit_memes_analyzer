@@ -39,9 +39,12 @@ class ReduceAvgScores:
                     self.middleware.publish(queue, avg_encode)
             else:
                 logging.error("Div 0 error")
+            self.middleware.ack(method)
         else:
             for queue in self.queues_to_write:
                 self.middleware.publish(queue, str({}).encode('utf-8'))
+            logging.info(f"[REDUCE AVG SCORES] END")
+            self.middleware.ack(method)
             self.middleware.shutdown()
 
 

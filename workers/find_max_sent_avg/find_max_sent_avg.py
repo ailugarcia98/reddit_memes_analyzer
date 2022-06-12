@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import logging
 import signal
 import sys
 
@@ -36,9 +37,12 @@ class FindMaxSentAvg:
             new_body = str(self.new_body(comments)).encode('utf-8')
             for queue in self.queues_to_write:
                 self.middleware.publish(queue, new_body)
+            self.middleware.ack(method)
         else:
             for queue in self.queues_to_write:
                 self.middleware.publish(queue, str({}).encode('utf-8'))
+            self.middleware.ack(method)
+            logging.info(f"[FIND MAX SENT AVG] END")
             self.middleware.shutdown()
 
     def new_body(self, comments):

@@ -32,9 +32,12 @@ class MapRemoveColumns5:
             url = self.new_body(body_recv).encode('utf-8')
             for queue in self.queues_to_write:
                 self.middleware.publish(queue, url)
+            self.middleware.ack(method)
         else:
             for queue in self.queues_to_write:
                 self.middleware.publish(queue, str({}).encode('utf-8'))
+            logging.info(f"[MRC5] END")
+            self.middleware.ack(method)
             self.middleware.shutdown()
 
     def new_body(self, body):

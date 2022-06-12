@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import logging
 import signal
 import sys
 
@@ -33,13 +34,19 @@ class FilterDeletedRemoved:
             new_body = json.dumps({})
             for queue in self.queues_to_write:
                 self.middleware.publish(queue, new_body)
+            logging.info(f"[FILTER DELETED REMOVED] END")
+            self.middleware.ack(method)
             self.middleware.shutdown()
         else:
+            send_array = []
             for comment in comments:
                 comments_not_deleted_removed = self.new_body(comment)
                 if comments_not_deleted_removed != json.dumps("removed/deleted"):
-                    for queue in self.queues_to_write:
-                        self.middleware.publish(queue, comments_not_deleted_removed)
+                    send_array.append(comments_not_deleted_removed)
+            if len(send_array) > 0:
+                for queue in self.queues_to_write:
+                    self.middleware.publish(queue, json.dumps(send_array))
+            self.middleware.ack(method)
 
     def new_body(self, comment):
         if comment["body"] == "[removed]" or comment["body"] == "[deleted]":

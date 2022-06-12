@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import json
+import logging
 import signal
 import sys
 
@@ -8,8 +10,11 @@ class FilterScoreMayorAvg:
         self.queue_to_read_avg = queue_to_read_avg
         self.queue_to_read_filter = queue_to_read_filter
         self.queues_to_write = queues_to_write
-        self.avg = 0.0
+        self.avg = None
         self.urls = []
+        self.end_post = False
+        self.have_avg = False
+        self.posts_before_avg_arrived = []
         self.middleware = middleware
         # graceful quit
         # Define how to do when it will receive SIGTERM
@@ -34,20 +39,47 @@ class FilterScoreMayorAvg:
         self.middleware.wait_for_messages()
 
     def callback_filter(self, ch, method, properties, body):
-        if body.decode('utf-8') != str({}):
-            score_body = float(body.decode('utf-8').split('$$,$$')[1])
-            if score_body > self.avg:
-                url = str(body.decode('utf-8').split('$$,$$')[2])
-                self.urls.append(url)
-                for queue in self.queues_to_write:
-                    self.middleware.publish(queue, str(self.urls).encode('utf-8'))
-        else:
-            for queue in self.queues_to_write:
-                self.middleware.publish(queue, str({}).encode('utf-8'))
-            self.middleware.shutdown()
+        recv = json.loads(body)
+        for i in recv:
+            if i != str({}):
+                score_body = float(i.split('$$,$$')[1])
+                if self.avg is None:
+                    self.posts_before_avg_arrived.append(i)
+                else:
+                    if score_body > self.avg:
+                        url = str(i.split('$$,$$')[2])
+                        if url not in self.urls:
+                            self.urls.append(url)
+            else:
+                self.end_post = True
+                if self.end_post and self.have_avg:
+                    self.send_final_posts(method)
+                else:
+                    self.middleware.ack(method)
 
     def callback_avg(self, ch, method, properties, body):
         self.avg = float(eval(body.decode('utf-8')))
+        logging.info(f"avg {self.avg}")
+        self.have_avg = True
+        if self.end_post and self.have_avg:
+            self.send_final_posts(method)
+        else:
+            self.middleware.ack(method)
+
+    def send_final_posts(self, method):
+        for post in self.posts_before_avg_arrived:
+            score_body = float(post.split('$$,$$')[1])
+            if score_body > self.avg:
+                url = str(post.split('$$,$$')[2])
+                if url not in self.urls:
+                    self.urls.append(url)
+        for queue in self.queues_to_write:
+            self.middleware.publish(queue, str(self.urls).encode('utf-8'))
+        logging.info(f"[FILTER SCORE MAYOR AVG] END")
+        self.middleware.ack(method)
+        self.middleware.shutdown()
+
+
 
 
 

@@ -82,13 +82,16 @@ class Producer:
     def callback_avg(self, ch, method, properties, body):
         if str(body.decode('utf-8')) != str({}):
             logging.info(f"#### [PRODUCER] Received avg {body.decode('utf-8')} ####")
+        self.middleware.ack(method)
 
     def callback_url(self, ch, method, properties, body):
         if str(body.decode('utf-8')) != str({}):
             logging.info(f"#### [PRODUCER] Received url {body.decode('utf-8')} ####")
+        self.middleware.ack(method)
 
     def callback_meme(self, ch, method, properties, body):
         meme_file = body
         open("/meme/meme_downloaded.jpg", "wb").write(meme_file)
         logging.info("#### [PRODUCER] Received meme ####")
+        self.middleware.ack(method)
 

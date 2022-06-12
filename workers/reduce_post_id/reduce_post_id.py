@@ -33,9 +33,12 @@ class ReducePostID:
             new_body = str(self.new_body(comments)).encode('utf-8')
             for queue in self.queues_to_write:
                 self.middleware.publish(queue, new_body)
+            self.middleware.ack(method)
         else:
             for queue in self.queues_to_write:
                 self.middleware.publish(queue, str({}).encode('utf-8'))
+            logging.info(f"[REDUCE POST ID] END")
+            self.middleware.ack(method)
             self.middleware.shutdown()
 
     def new_body(self, comments):

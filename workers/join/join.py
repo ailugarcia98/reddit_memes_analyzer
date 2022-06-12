@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import json
+import logging
 import signal
 import sys
 
@@ -8,9 +10,7 @@ class Join:
         self.queue_to_read_comments = queue_to_read_2
         self.queue_to_read_posts = queue_to_read_3
         self.queues_to_write = queues_to_write
-        self.posts = []
-        self.comments = []
-        self.new_body = []
+        self.new_body = {}
         self.end = False
         self.stop_append_post = False
         self.stop_append_comments = False
@@ -45,32 +45,60 @@ class Join:
         return contains
 
     def callback_post(self, ch, method, properties, body):
-        real_body = body.decode('utf-8')
+        real_body = json.loads(body)
         if not self.stop_append_post:
-            if real_body == str({}):
+            if real_body == json.loads('{}'):
+                logging.info(f"[JOIN] STOP APPEND POSTS")
                 self.stop_append_post = True
-            self.posts.append(real_body)
+                self.middleware.ack(method)
+                if self.stop_append_comments:
+                    self.do_join()
+            else:
+                for post in real_body:
+                    post_id = str(post.split(',')[0])
+                    if post_id not in self.new_body and str(post.split(',')[1]) != '':
+                        self.new_body.update({post_id: {"url": str(post.split(',')[1]), "comments": []}})
+                    else:
+                        if post_id in self.new_body:
+                            if self.new_body[post_id]["url"] == '' and str(post.split(',')[1]) != '':
+                                self.new_body[post_id]["url"] = str(post.split(',')[1])
+                self.middleware.ack(method)
+        else:
+            self.middleware.ack(method)
 
     def callback_comments(self, ch, method, properties, body):
-        real_body = body.decode('utf-8')
+        real_body = json.loads(body)
         if not self.stop_append_comments:
-            if real_body == str({}):
+            if real_body == json.loads('{}'):
+                logging.info(f"[JOIN] STOP APPEND COMMENTS")
                 self.stop_append_comments = True
-            self.comments.append(real_body)
+                self.middleware.ack(method)
+                if self.stop_append_post:
+                    self.do_join()
+            else:
+                for comment in real_body:
+                    post_id = str(comment.split('$$,$$')[0])
+                    if post_id in self.new_body:
+                        comment_split = comment.split('$$,$$')
+                        body_score_sentiment = f"{comment_split[1]}$$,$${comment_split[2]}$$,$${comment_split[3]}"
+                        self.new_body[post_id]["comments"].append(body_score_sentiment)
+                    else:
+                        if not self.stop_append_post:
+                            comment_split = comment.split('$$,$$')
+                            self.new_body.update({post_id: {"url": '', "comments": \
+                                [f"{comment_split[1]}$$,$${comment_split[2]}$$,$${comment_split[3]}"]}})
+                self.middleware.ack(method)
+        else:
+            self.middleware.ack(method)
 
-        for post in self.posts:
-            post_id = post.split(',')[0]
-            for comment in self.comments:
-                if post == str({}) and comment == str({}):
-                    self.end = True
-                    self.new_body.append(str({}))
-                    for queue in self.queues_to_write:
-                        self.middleware.publish(queue, str(self.new_body).encode('utf-8'))
-                    # return 0
-                    self.middleware.shutdown()
-                else:
-                    comment_post_id = comment.split('$$,$$')[0]
-                    if post_id == comment_post_id:
-                        post_url = post.split(',')[1]
-                        if f'{comment}$$,$${post_url}' not in self.new_body:   # drop duplicates
-                            self.new_body.append(f'{comment}$$,$${post_url}')
+    def do_join(self):
+        body_to_send = []
+        for post_id in self.new_body:
+            url = self.new_body[post_id]["url"]
+            if url != '':
+                for comment in self.new_body[post_id]["comments"]:
+                    post_url = url
+                    body_to_send.append(f'{post_id}$$,$${comment}$$,$${post_url}')
+        body_to_send.append(str({}))
+        for queue in self.queues_to_write:
+            self.middleware.publish(queue, json.dumps(body_to_send))

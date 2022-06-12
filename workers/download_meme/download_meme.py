@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import logging
+
 import requests
 import signal
 import sys
@@ -30,16 +32,23 @@ class DownloadMeme:
 
     def callback(self, ch, method, properties, body):
         meme_to_download = body.decode('utf-8')
-        meme_downloaded = self.download_meme(meme_to_download)
-        if meme_downloaded is not None:
-            for queue in self.queues_to_write:
-                self.middleware.publish(queue, meme_downloaded)
-        self.middleware.shutdown()
+        if meme_to_download != '':
+            meme_downloaded = self.download_meme(meme_to_download)
+            if meme_downloaded is not None:
+                for queue in self.queues_to_write:
+                    self.middleware.publish(queue, meme_downloaded)
+        logging.info(f"[DOWNLOAD MEME] END")
+        self.middleware.ack(method)
 
     def download_meme(self, url):
-        response = requests.get(url)
-        if response.status_code == 200:
-            meme = response.content
+        if url.__contains__(".jpg") or url.__contains__(".png") or url.__contains__(".gif"):
+            logging.info(f"[DOWNLOADER] Downloading meme {url}")
+            response = requests.get(url)
+            if response.status_code == 200:
+                meme = response.content
+            else:
+                meme = None
+            return meme
         else:
-            meme = None
-        return meme
+            logging.info("[DOWNLOADER] This meme isn't an image/gif")
+            return None

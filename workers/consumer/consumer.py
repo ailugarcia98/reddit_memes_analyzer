@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import logging
 import signal
 import sys
 
@@ -34,6 +35,8 @@ class Consumer:
             if str(body) == str({}):
                 body = json.dumps({})
                 self.middleware.publish(queue, body)
-                self.middleware.shutdown()
+                logging.info(f"[CONSUMER] END")
             else:
                 self.middleware.publish(queue, body)
+        self.middleware.ack(method)
+
